@@ -50,7 +50,7 @@ class Movie {
     }
 
     public function getShowtimesByMovie($movie_id) {
-        $sql = "SELECT s.showtime_id, s.room_id, r.room_name, s.show_date, s.start_time, s.end_time, s.base_price FROM Showtimes s JOIN Rooms r ON s.room_id = r.room_id WHERE s.movie_id = :movie_id ORDER BY s.show_date, s.start_time";
+        $sql = "SELECT s.showtime_id, s.room_id, r.room_name, s.show_date, s.start_time, s.end_time, s.base_price FROM Showtimes s JOIN Rooms r ON s.room_id = r.room_id WHERE s.movie_id = :movie_id AND s.show_date >= DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND s.show_date <= DATE_ADD(CURDATE(), INTERVAL 14 DAY) ORDER BY s.show_date, s.start_time";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':movie_id', $movie_id, PDO::PARAM_INT);
         $stmt->execute();
