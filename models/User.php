@@ -14,7 +14,10 @@ class User {
     public $phone;
     public $birthday;
     public $address;
+<<<<<<< HEAD
     public $bank_account;
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
     public $role;
     public $status;
 
@@ -81,7 +84,11 @@ class User {
     // Cập nhật thông tin 
     public function update() {
         $sql = "UPDATE $this->table_name 
+<<<<<<< HEAD
         SET full_name=:full_name, email=:email, phone=:phone, birthday=:birthday, address=:address, bank_account=:bank_account 
+=======
+        SET full_name=:full_name, email=:email, phone=:phone, birthday=:birthday, address=:address 
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
         WHERE user_id=:user_id";
         $stmt = $this->conn->prepare($sql);
 
@@ -90,14 +97,20 @@ class User {
         $this->phone = htmlspecialchars(strip_tags($this->phone ?? ''));
         $this->birthday = htmlspecialchars(strip_tags($this->birthday ?? ''));
         $this->address = htmlspecialchars(strip_tags($this->address ?? ''));
+<<<<<<< HEAD
         $this->bank_account = htmlspecialchars(strip_tags($this->bank_account ?? ''));
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 
         $stmt->bindParam(":full_name", $this->full_name);
         $stmt->bindParam(":email", $this->email);
         $stmt->bindParam(":phone", $this->phone);
         $stmt->bindParam(":birthday", $this->birthday);
         $stmt->bindParam(":address", $this->address);
+<<<<<<< HEAD
         $stmt->bindParam(":bank_account", $this->bank_account);
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
         $stmt->bindParam(":user_id", $this->user_id);
 
         return $stmt->execute();
@@ -105,7 +118,11 @@ class User {
 
     // Lấy thông tin user theo ID
     public function getUserById($user_id) {
+<<<<<<< HEAD
         $sql = "SELECT user_id, full_name, email, phone, birthday, address, bank_account, role, status 
+=======
+        $sql = "SELECT user_id, full_name, email, phone, birthday, address, role, status 
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
         FROM $this->table_name 
         WHERE user_id = :user_id LIMIT 0,1";
         $stmt = $this->conn->prepare($sql);

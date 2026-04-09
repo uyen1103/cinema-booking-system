@@ -4,21 +4,30 @@ require_once 'models/Movie.php';
 require_once 'models/Order.php';
 require_once 'models/Ticket.php';
 require_once 'models/Promotion.php';
+<<<<<<< HEAD
 require_once 'models/SeatPrice.php';
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 
 class MovieController {
     private $movieModel;
     private $orderModel;
     private $ticketModel;
     private $promotionModel;
+<<<<<<< HEAD
     private $seatPriceModel;
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 
     public function __construct() {
         $this->movieModel = new Movie();
         $this->orderModel = new Order();
         $this->ticketModel = new Ticket();
         $this->promotionModel = new Promotion();
+<<<<<<< HEAD
         $this->seatPriceModel = new SeatPrice();
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
     }
 
     private function validatePromotionForOrder(array $promo, array $order, array $tickets): array {
@@ -146,7 +155,10 @@ class MovieController {
 
         $movie = $this->movieModel->getMovieById($showtime['movie_id']);
         $seatMap = $this->movieModel->getSeatsForShowtime($showtime_id);
+<<<<<<< HEAD
         $seatPricesInfo = $this->seatPriceModel->getAll();
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 
         $errors = [];
         $success = '';
@@ -162,6 +174,7 @@ class MovieController {
             $offer = null;
             $discountAmount = 0.00;
             $promotion_id = null;
+<<<<<<< HEAD
             
             // Calculate total amount based on seat types
             $totalAmount = 0;
@@ -180,6 +193,9 @@ class MovieController {
                 }
             }
             
+=======
+            $totalAmount = count($selectedSeats) * $showtime['base_price'];
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             $finalAmount = $totalAmount;
 
             if ($promoCode !== '') {
@@ -209,7 +225,11 @@ class MovieController {
                 );
 
                 if ($order_id) {
+<<<<<<< HEAD
                     if ($this->ticketModel->reserveTicketsWithPrice($order_id, $showtime_id, $seatPrices)) {
+=======
+                    if ($this->ticketModel->reserveTickets($order_id, $showtime_id, $selectedSeats, $showtime['base_price'])) {
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                         header('Location: web.php?action=checkout&order_id=' . $order_id);
                         exit;
                     }

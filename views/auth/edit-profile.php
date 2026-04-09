@@ -19,6 +19,7 @@
         <?php endif; ?>
 
         <form method="POST" class="auth-form" action="web.php?action=edit-profile">
+<<<<<<< HEAD
             <div class="form-row">
                 <div class="form-group">
                     <label>Họ và Tên</label>
@@ -31,21 +32,43 @@
             </div>
 
             <div class="form-row">
-                <div class="form-group">
-                    <label>Số điện thoại</label>
-                    <input type="tel" name="phone" placeholder="0901234567" required class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Ngày sinh</label>
-                    <input type="date" name="birthday" class="form-control" value="<?= htmlspecialchars($user['birthday'] ?? '') ?>">
-                </div>
+=======
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" name="full_name" placeholder="Nguyễn Văn A" required class="form-control" value="<?= htmlspecialchars($user['full_name'] ?? '') ?>">
             </div>
 
             <div class="form-row">
                 <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" placeholder="email@example.com" required class="form-control" value="<?= htmlspecialchars($user['email'] ?? '') ?>">
+                </div>
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="tel" name="phone" placeholder="0901234567" required class="form-control" value="<?= htmlspecialchars($user['phone'] ?? '') ?>">
+                </div>
+<<<<<<< HEAD
+=======
+            </div>
+
+            <div class="form-row">
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
+                <div class="form-group">
+                    <label>Ngày sinh</label>
+                    <input type="date" name="birthday" class="form-control" value="<?= htmlspecialchars($user['birthday'] ?? '') ?>">
+                </div>
+<<<<<<< HEAD
+            </div>
+
+            <div class="form-row">
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
+                <div class="form-group">
                     <label>Địa chỉ</label>
                     <input type="text" name="address" placeholder="Quận 1, TP. HCM" class="form-control" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
                 </div>
+<<<<<<< HEAD
                 <div class="form-group">
                     <label>Số tài khoản ngân hàng</label>
                     <input type="text" name="bank_account" placeholder="Vd: 0123456789" class="form-control" value="<?= htmlspecialchars($user['bank_account'] ?? '') ?>">
@@ -77,6 +100,10 @@
                 Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
             </small>
 
+=======
+            </div>
+
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             <button type="submit" class="btn-primary">Lưu thay đổi</button>
         </form>
 

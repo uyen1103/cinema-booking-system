@@ -55,6 +55,7 @@
             </div>
 
             <div class="info-grid">
+<<<<<<< HEAD
                 <div class="info-row">
                     <div class="info-group">
                         <span class="info-label">Họ và Tên</span>
@@ -86,6 +87,27 @@
                         <span class="info-label">Số tài khoản ngân hàng</span>
                         <p class="info-value"><?= htmlspecialchars($user['bank_account'] ?? 'Chưa cập nhật') ?></p>
                     </div>
+=======
+                <div class="info-group">
+                    <span class="info-label">Họ và Tên</span>
+                    <p class="info-value"><?= htmlspecialchars($user['full_name'] ?? '---') ?></p>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Email</span>
+                    <p class="info-value"><?= htmlspecialchars($user['email'] ?? '---') ?></p>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Số điện thoại</span>
+                    <p class="info-value"><?= htmlspecialchars($user['phone'] ?? 'Chưa cập nhật') ?></p>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Ngày sinh</span>
+                    <p class="info-value"><?= !empty($user['birthday']) ? date('d/m/Y', strtotime($user['birthday'])) : 'Chưa cập nhật' ?></p>
+                </div>
+                <div class="info-group full-width">
+                    <span class="info-label">Địa chỉ</span>
+                    <p class="info-value"><?= htmlspecialchars($user['address'] ?? 'Chưa cập nhật') ?></p>
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                 </div>
             </div>
 

@@ -62,6 +62,7 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                             <span class="seat-row-label"><?php echo htmlspecialchars($rowName); ?></span>
                             <div class="seat-row-items">
                                 <?php foreach ($seats as $seat): ?>
+<<<<<<< HEAD
                                     <?php 
                                     $seatType = $seat['seat_type'] ?? 'standard';
                                     $seatTypeClass = 'seat-' . $seatType;
@@ -82,6 +83,10 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                                            data-seat-type="<?php echo htmlspecialchars($seatType); ?>"
                                            data-seat-price="<?php echo $seatPrice; ?>"
                                            title="<?php echo htmlspecialchars($seat['seat_row'] . $seat['seat_number']); ?> - <?php echo number_format($seatPrice, 0, ',', '.'); ?>₫">
+=======
+                                    <?php $seatTypeClass = 'seat-' . ($seat['seat_type'] ?? 'standard'); ?>
+                                    <label class="seat-item <?php echo $seat['reserved'] ? 'seat-reserved' : 'seat-available'; ?> <?php echo htmlspecialchars($seatTypeClass); ?>">
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                                         <input type="checkbox" name="seats[]" value="<?php echo $seat['seat_id']; ?>" <?php echo $seat['reserved'] ? 'disabled' : ''; ?> />
                                         <span><?php echo htmlspecialchars($seat['seat_row'] . $seat['seat_number']); ?></span>
                                     </label>
@@ -97,6 +102,7 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                     <span class="seat-legend seat-vip"></span> VIP
                     <span class="seat-legend seat-couple"></span> Couple
                 </div>
+<<<<<<< HEAD
 
                 <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
                     <?php if (!empty($seatPricesInfo)): ?>
@@ -125,6 +131,8 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                         <div style="font-size: 0.9rem;">Giá vé: <?php echo number_format($showtime['base_price'], 0, ',', '.'); ?>₫</div>
                     <?php endif; ?>
                 </div>
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             </div>
 
             <div class="booking-right card-panel">
@@ -144,6 +152,7 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                     <div class="summary-row"><span>Ngày & giờ</span><strong><?php echo date('D, d/m/Y', strtotime($showtime['show_date'])); ?> • <?php echo htmlspecialchars(substr($showtime['start_time'], 0, 5)); ?></strong></div>
                     <div class="summary-row"><span>Rạp chiếu</span><strong><?php echo htmlspecialchars($cinemaName); ?></strong></div>
                     <div class="summary-row"><span>Phòng chiếu</span><strong><?php echo htmlspecialchars($hallName); ?></strong></div>
+<<<<<<< HEAD
 
                     <div class="booking-selected-seats">
                         <strong>Ghế đã chọn:</strong>
@@ -154,6 +163,13 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
                             <strong>Tổng tiền:</strong>
                             <span id="total-price" style="font-size: 1.3rem; color: #e71930; font-weight: bold;">0₫</span>
                         </div>
+=======
+                    <div class="summary-row"><span>Giá vé</span><strong><?php echo number_format($showtime['base_price'], 0, ',', '.'); ?>₫</strong></div>
+
+                    <div class="booking-selected-seats">
+                        <strong>Ghế đã chọn:</strong>
+                        <div id="selected-seat-list" class="selected-seat-list">Chưa chọn ghế</div>
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                     </div>
 
                     <button type="submit" class="btn btn-primary btn-full">Tiếp tục thanh toán →</button>
@@ -166,11 +182,15 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectedSeatList = document.getElementById('selected-seat-list');
+<<<<<<< HEAD
         const totalPriceEl = document.getElementById('total-price');
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
         const seatInputs = document.querySelectorAll('.seat-item input[type="checkbox"]');
 
         function updateSelectedSeats() {
             const selected = [];
+<<<<<<< HEAD
             let totalPrice = 0;
             
             seatInputs.forEach(function (input) {
@@ -216,6 +236,17 @@ if (!empty($_POST['seats']) && is_array($_POST['seats'])) {
             } else {
                 totalPriceEl.textContent = '0₫';
             }
+=======
+            seatInputs.forEach(function (input) {
+                if (input.checked) {
+                    const label = input.parentElement.querySelector('span');
+                    if (label) {
+                        selected.push(label.textContent.trim());
+                    }
+                }
+            });
+            selectedSeatList.textContent = selected.length ? selected.join(', ') : 'Chưa chọn ghế';
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
         }
 
         seatInputs.forEach(function (input) {

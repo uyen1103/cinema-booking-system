@@ -170,12 +170,15 @@
 
 /* Info Grid */
 .info-grid {
+<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     gap: 35px;
 }
 
 .info-row {
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 35px;

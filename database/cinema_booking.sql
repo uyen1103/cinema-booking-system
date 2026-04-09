@@ -10,7 +10,10 @@ CREATE TABLE Users (
     phone VARCHAR(20) DEFAULT NULL,
     birthday DATE DEFAULT NULL,
     address VARCHAR(255) DEFAULT NULL,
+<<<<<<< HEAD
     bank_account VARCHAR(50) DEFAULT NULL,
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
     role ENUM('customer','staff','admin') NOT NULL,
     status ENUM('active','inactive') DEFAULT 'active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -61,6 +64,7 @@ CREATE TABLE Seats (
     FOREIGN KEY (room_id) REFERENCES Rooms(room_id)
 ) ENGINE=InnoDB;
 
+<<<<<<< HEAD
 -- SeatPrices: Quản lý giá tiền theo loại ghế
 CREATE TABLE SeatPrices (
     seat_price_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -70,6 +74,8 @@ CREATE TABLE SeatPrices (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 -- Showtimes
 CREATE TABLE Showtimes (
     showtime_id INT AUTO_INCREMENT PRIMARY KEY,

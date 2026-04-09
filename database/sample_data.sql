@@ -371,6 +371,7 @@ INSERT INTO Promotions (promo_code, discount_type, discount_value, description, 
 ('STUDENT20','percent',20,'Giảm 20% cho học sinh sinh viên - chỉ áp dụng ghế thường',1,0,'["standard"]','2026-01-01 00:00:00','2026-12-31 23:59:59'),
 ('SAVE50000','fixed',50000,'Giảm 50,000đ cho đơn hàng từ 200,000đ trở lên',1,200000,'["standard","vip","couple"]','2026-01-01 00:00:00','2026-12-31 23:59:59'),
 ('FAMILY15','percent',15,'Giảm 15% cho gia đình - tối thiểu 3 vé',3,0,'["standard","vip","couple"]','2026-01-01 00:00:00','2026-12-31 23:59:59'),
+<<<<<<< HEAD
 ('VIP30','percent',30,'Giảm 30% cho ghế VIP - tối thiểu 2 ghế VIP',2,0,'["vip"]','2026-01-01 00:00:00','2026-12-31 23:59:59');
 
 
@@ -380,3 +381,6 @@ INSERT INTO SeatPrices (seat_type, price_multiplier, description) VALUES
 ('vip', 1.20, 'Ghế VIP'),
 ('couple', 1.40, 'Ghế đôi');
 
+=======
+('VIP30','percent',30,'Giảm 30% cho ghế VIP - tối thiểu 2 ghế VIP',2,0,'["vip"]','2026-01-01 00:00:00','2026-12-31 23:59:59');
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163

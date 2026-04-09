@@ -138,7 +138,10 @@ class AuthController {
             $userModel->phone = trim($_POST['phone'] ?? $user['phone']);
             $userModel->birthday = trim($_POST['birthday'] ?? $user['birthday']);
             $userModel->address = trim($_POST['address'] ?? $user['address']);
+<<<<<<< HEAD
             $userModel->bank_account = trim($_POST['bank_account'] ?? $user['bank_account']);
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 
             $errors = [];
             if (empty($userModel->full_name)) {
@@ -156,6 +159,7 @@ class AuthController {
                 $errors[] = 'Email đã được đăng ký';
             }
 
+<<<<<<< HEAD
             // Xử lý cập nhật mật khẩu nếu có
             $new_password = trim($_POST['new_password'] ?? '');
             $confirm_password = trim($_POST['confirm_password'] ?? '');
@@ -198,6 +202,18 @@ class AuthController {
                 if (empty($errors)) {
                     $errors = ["Cập nhật thất bại"];
                 }
+=======
+            if (empty($errors)) {
+                if ($userModel->update()) {
+                    // Cập nhật session
+                    $_SESSION['full_name'] = $userModel->full_name;
+                    $_SESSION['email'] = $userModel->email;
+                    $_SESSION['phone'] = $userModel->phone;
+                    header("Location: web.php?action=profile&message=Cập nhật thành công");
+                    exit;
+                }
+                $errors = ["Cập nhật thất bại"];
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             }
 
             $user = [
@@ -206,7 +222,10 @@ class AuthController {
                 'phone' => $userModel->phone,
                 'birthday' => $userModel->birthday,
                 'address' => $userModel->address,
+<<<<<<< HEAD
                 'bank_account' => $userModel->bank_account,
+=======
+>>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             ];
             include 'views/auth/edit-profile.php';
         } else {
