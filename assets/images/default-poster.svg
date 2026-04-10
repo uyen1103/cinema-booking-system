@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="760" viewBox="0 0 540 760" fill="none">
+<rect width="540" height="760" rx="36" fill="#F8FAFC"/>
+<rect x="40" y="40" width="460" height="680" rx="24" fill="#E2E8F0"/>
+<path d="M104 590l96-120 88 86 68-58 80 92H104z" fill="#94A3B8"/>
+<circle cx="205" cy="235" r="56" fill="#CBD5E1"/>
+<text x="50%" y="86%" text-anchor="middle" fill="#475569" font-size="34" font-family="Arial" font-weight="700">Cinema Poster</text>
+</svg>

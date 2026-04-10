@@ -1,0 +1,123 @@
+.admin-kpi-list {
+    display: grid;
+    gap: 14px;
+}
+
+.admin-kpi-item {
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+}
+
+.admin-progress {
+    height: 10px;
+    background: #f1f5f9;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.admin-progress > span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--admin-primary), var(--admin-primary-dark));
+}
+
+.admin-report-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 1.35fr .9fr;
+}
+
+.admin-chart-bars {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-chart-row {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.admin-chart-bar {
+    height: 12px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    overflow: hidden;
+}
+
+.admin-chart-bar > span,
+.admin-chart-fill {
+    display: block;
+    height: 100%;
+    width: var(--bar-width, 8%);
+    border-radius: inherit;
+    background: linear-gradient(135deg, #ef233c, #f97316);
+}
+
+.admin-seat-grid {
+    display: grid;
+    gap: 14px;
+}
+
+.admin-seat-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-seat-label {
+    width: 28px;
+    font-weight: 800;
+    color: #64748b;
+}
+
+.admin-seat {
+    min-width: 46px;
+    padding: 12px 10px;
+    border-radius: 12px;
+    border: 0;
+    font-weight: 800;
+    transition: transform .15s ease, box-shadow .15s ease;
+    text-decoration: none;
+    text-align: center;
+}
+
+.admin-seat:hover {
+    transform: translateY(-2px);
+}
+
+.admin-seat--standard { background: #fef3c7; color: #92400e; }
+.admin-seat--vip { background: #ffe4e6; color: #be123c; }
+.admin-seat--couple { background: #ede9fe; color: #6d28d9; min-width: 72px; }
+.admin-seat--disabled { background: #e5e7eb; color: #6b7280; }
+
+.admin-alert-card {
+    border-radius: 18px;
+    border: 1px solid rgba(239, 68, 68, 0.14);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.04);
+}
+
+.admin-page-soft {
+    position: relative;
+}
+
+.admin-page-soft::before {
+    content: '';
+    position: absolute;
+    inset: -12px -12px auto auto;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(239, 35, 60, 0.08), transparent 70%);
+    pointer-events: none;
+}
+
+@media (max-width: 992px) {
+    .admin-report-grid {
+        grid-template-columns: 1fr;
+    }
+}

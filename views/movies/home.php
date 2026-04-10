@@ -10,7 +10,7 @@
                 <p>Phim xoay quanh gia đình bà Nữ ba thế hệ sống chung, nảy sinh nhiều mâu thuẫn khi con gái út yêu chàng trai giàu có, qua đó khắc họa những xung đột gia đình với thông điệp: “Ai cũng có lỗi, nhưng ai cũng nghĩ mình là nạn nhân.”</p>
                 <div class="hero-actions">
                     <a href="#now-showing" class="btn btn-primary">Đặt vé ngay</a>
-                    <button type="button" class="btn btn-secondary btn-secondary--light open-trailer" data-trailer="<?php echo htmlspecialchars($movies[0]['trailer_url'] ?? ''); ?>">Xem trailer</button>
+                    <button type="button" class="btn btn-secondary btn-secondary--light open-trailer" data-trailer="https://www.youtube.com/embed/IkaP0KJWTsQ">Xem trailer</button>
                 </div>
             </div>
         </div>
@@ -65,7 +65,7 @@
                             <p class="movie-meta"><?php echo htmlspecialchars($movie['genre']); ?> • <?php echo intval($movie['duration']); ?> phút</p>
                             <p class="movie-description"><?php echo htmlspecialchars(mb_substr($movie['description'] ?? '', 0, 120)); ?><?php echo mb_strlen($movie['description'] ?? '') > 120 ? '...' : ''; ?></p>
                             <div class="movie-actions">
-                                <a href="web.php?action=movie&id=<?php echo $movie['movie_id']; ?>" class="btn btn-secondary">Đặt vé</a>
+                                <a href="<?= h(app_url('movie', ['id' => $movie['movie_id']])) ?>" class="btn btn-secondary">Đặt vé</a>
                                 <button type="button" class="btn btn-secondary btn-secondary--light open-trailer" data-trailer="<?php echo htmlspecialchars($movie['trailer_url'] ?? ''); ?>">Xem trailer</button>
                             </div>
                         </div>

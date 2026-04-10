@@ -34,7 +34,7 @@
         </form>
 
         <div class="auth-links">
-            <a href="web.php?action=login">Quay lại đăng nhập</a>
+            <a href="<?= h(app_url('login')) ?>">Quay lại đăng nhập</a>
         </div>
         
     </div>

@@ -3,7 +3,7 @@
 <div class="page-section booking-showtime-page">
     <div class="container">
         <div class="booking-header">
-            <a href="web.php?action=movie&id=<?php echo intval($movie['movie_id']); ?>" class="btn-back">&larr; Quay lại</a>
+            <a href="<?= h(app_url('movie', ['id' => intval($movie['movie_id'])])) ?>" class="btn-back">&larr; Quay lại</a>
             <div>
                 <h1>Chọn lịch chiếu</h1>
             </div>
@@ -103,7 +103,7 @@
 
                                         <div class="showtime-list">
                                             <?php foreach ($roomGroup['showtimes'] as $showtime): ?>
-                                                <a href="web.php?action=book&showtime_id=<?php echo intval($showtime['showtime_id']); ?>" class="showtime-btn">
+                                                <a href="<?= h(app_url('book', ['showtime_id' => intval($showtime['showtime_id'])])) ?>" class="showtime-btn">
                                                     <span class="showtime-time">
                                                         <?php echo htmlspecialchars(substr($showtime['start_time'], 0, 5)); ?>
                                                     </span>

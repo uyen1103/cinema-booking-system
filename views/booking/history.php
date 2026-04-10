@@ -9,15 +9,28 @@
         <?php if (!empty($orders)): ?>
             <div class="history-list">
                 <?php foreach ($orders as $order): ?>
+                    <?php
+                    $orderStatus = $order['order_status'] ?? 'pending';
+                    $paymentStatus = $order['payment_status'] ?? 'pending';
+                    $canRequestCancel = in_array($paymentStatus, ['paid', 'success'], true)
+                        || in_array($orderStatus, ['completed', 'paid'], true);
+                    $canRequestCancel = $canRequestCancel && $orderStatus !== 'cancelled';
+                    $statusLabel = match ($orderStatus) {
+                        'completed', 'paid' => 'Hoàn tất',
+                        'cancelled' => 'Đã hủy',
+                        default => 'Chờ xử lý',
+                    };
+                    ?>
                     <div class="history-card">
                         <div class="history-card-header">
                             <div>
                                 <h2>Đơn <?php echo htmlspecialchars($order['order_code']); ?></h2>
-                                <p class="history-meta"><?php echo htmlspecialchars($order['order_date']); ?> • <span class="status-badge status-<?php echo htmlspecialchars($order['order_status']); ?>"><?php echo htmlspecialchars(ucfirst($order['order_status'])); ?></span></p>
+                                <p class="history-meta"><?php echo htmlspecialchars($order['order_date']); ?> • <span class="status-badge status-<?php echo htmlspecialchars($orderStatus); ?>"><?php echo htmlspecialchars($statusLabel); ?></span></p>
                             </div>
                             <div class="history-card-price">
                                 <p>Thanh toán</p>
                                 <strong><?php echo number_format($order['final_amount'], 0, ',', '.'); ?>₫</strong>
+                                <div class="text-muted small"><?php echo htmlspecialchars(in_array($paymentStatus, ['paid', 'success'], true) ? 'Đã thanh toán' : ($paymentStatus === 'refunded' ? 'Đã hoàn tiền' : 'Chưa thanh toán')); ?></div>
                             </div>
                         </div>
 
@@ -44,9 +57,9 @@
                                     <p>Yêu cầu hủy vé: <strong><?php echo htmlspecialchars(ucfirst($cancellationMap[$order['order_id']]['status'])); ?></strong></p>
                                     <p>Lý do: <?php echo nl2br(htmlspecialchars($cancellationMap[$order['order_id']]['reason'])); ?></p>
                                 </div>
-                            <?php elseif ($order['order_status'] === 'paid'): ?>
+                            <?php elseif ($canRequestCancel): ?>
                                 <div class="history-actions">
-                                    <a href="web.php?action=cancel-booking&order_id=<?php echo $order['order_id']; ?>" class="btn btn-secondary">Yêu cầu hủy vé</a>
+                                    <a href="<?= h(app_url('cancel-booking', ['order_id' => (int) $order['order_id']])) ?>" class="btn btn-secondary">Yêu cầu hủy vé</a>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -57,7 +70,7 @@
             <div class="empty-state">
                 <h2>Chưa có vé đặt</h2>
                 <p>Bạn hiện chưa có đơn đặt vé nào. Hãy đặt vé để xem phim yêu thích.</p>
-                <a href="web.php?action=home" class="btn btn-primary">Xem phim ngay</a>
+                <a href="<?= h(app_url('home')) ?>" class="btn btn-primary">Xem phim ngay</a>
             </div>
         <?php endif; ?>
     </div>

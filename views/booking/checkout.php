@@ -3,7 +3,7 @@
 <div class="page-section booking-page">
     <div class="container">
         <div class="booking-header">
-            <a href="web.php?action=book&showtime_id=<?php echo intval($tickets[0]['showtime_id'] ?? 0); ?>" class="btn-back">&larr; Quay lại</a>
+            <a href="<?= h(app_url('book', ['showtime_id' => intval($tickets[0]['showtime_id'] ?? 0)])) ?>" class="btn-back">&larr; Quay lại</a>
         </div>
 
         <div class="booking-steps">
@@ -58,13 +58,8 @@
                     </label>
                 </div>
 
-<<<<<<< HEAD
                 <div class="promo-block" style="margin-top: 20px;">
                     <div class="promo-header" style="margin-bottom: 12px;">
-=======
-                <div class="promo-block">
-                    <div class="promo-header">
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                         <h2>Mã giảm giá</h2>
                     </div>
                     <div class="promo-input-row">
@@ -84,11 +79,7 @@
                                         <p class="promo-warning" style="color:#d9534f; margin:8px 0 0; font-size:13px;"><?php echo htmlspecialchars($promoValidation['reason']); ?></p>
                                     <?php endif; ?>
                                 </div>
-<<<<<<< HEAD
                                 <button type="button" name="apply_promo_code" value="<?php echo htmlspecialchars($promo['promo_code']); ?>" class="btn btn-sm <?php echo $isActive ? 'btn-outline' : ''; ?>" <?php echo $isDisabled ? 'disabled' : ''; ?>>
-=======
-                                <button type="submit" name="apply_promo_code" value="<?php echo htmlspecialchars($promo['promo_code']); ?>" class="btn btn-sm <?php echo $isActive ? 'btn-outline' : ''; ?>" <?php echo $isDisabled ? 'disabled' : ''; ?>>
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                                     <?php echo $isActive ? 'Đã áp dụng' : ($isDisabled ? 'Không áp dụng được' : 'Áp dụng'); ?>
                                 </button>
                             </div>
@@ -120,15 +111,9 @@
                     <div class="summary-row"><span>Giảm giá</span><strong>-<?php echo number_format($order['discount_amount'], 0, ',', '.'); ?>₫</strong></div>
                     <div class="summary-row total"><span>Tổng cộng</span><strong><?php echo number_format($order['final_amount'], 0, ',', '.'); ?>₫</strong></div>
 
-<<<<<<< HEAD
                     <div class="form-group terms" style="margin-top: 18px; padding-top: 12px; border-top: 1px solid #f0f1f5;">
                         <label class="checkbox-label">
                             <input type="checkbox" name="terms_agree" required <?php echo isset($_POST['terms_agree']) ? 'checked' : ''; ?> />
-=======
-                    <div class="form-group terms">
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="terms_agree" required />
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
                             Tôi đã đọc và đồng ý với các <a href="#">điều khoản</a> và <a href="#">chính sách</a> của hệ thống.
                         </label>
                     </div>
@@ -140,7 +125,6 @@
     </div>
 </div>
 
-<<<<<<< HEAD
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Update selected class for payment methods
@@ -191,6 +175,4 @@
     });
 </script>
 
-=======
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>
