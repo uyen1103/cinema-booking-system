@@ -1,6 +1,6 @@
 <?php
-require_once 'models/User.php';
-require_once 'helpers/OAuthHelper.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../helpers/OAuthHelper.php';
 
 // Controller xử lý OAuth login (Google)
 class OAuthController {
@@ -22,7 +22,7 @@ class OAuthController {
         $code = $_GET['code'] ?? null;
 
         if (!$code) {
-            header("Location: web.php?action=login&error=Google login failed");
+            header("Location: index.php?action=login&error=Google login failed");
             exit;
         }
 
@@ -41,15 +41,18 @@ class OAuthController {
                 $_SESSION['phone'] = $user['phone'] ?? '';
                 $_SESSION['role'] = $user['role'];
                 
-                header("Location: web.php?action=home");
-
+                if (in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
+                    header("Location: index.php?action=admin_dashboard");
+                } else {
+                    header("Location: index.php");
+                }
                 exit;
             } else {
-                header("Location: web.php?action=login&error=Failed to create user account");
+                header("Location: index.php?action=login&error=Failed to create user account");
                 exit;
             }
         } catch (Exception $e) {
-            header("Location: web.php?action=login&error=" . urlencode($e->getMessage()));
+            header("Location: index.php?action=login&error=" . urlencode($e->getMessage()));
             exit;
         }
     }

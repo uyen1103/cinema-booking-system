@@ -1,67 +1,49 @@
 <?php
-require_once 'config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 class SeatPrice {
-    private $conn;
-    private $table_name = "SeatPrices";
-
-    public $seat_price_id;
-    public $seat_type;
-    public $price_multiplier;
-    public $description;
+    private PDO $conn;
+    private string $table = 'seat_prices';
 
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
+        $this->ensureSchema();
     }
 
-    // Get all seat prices
-    public function getAll() {
-        $sql = "SELECT * FROM $this->table_name ORDER BY seat_price_id";
-        $stmt = $this->conn->prepare($sql);
+    private function ensureSchema(): void {
+        try {
+            $hasLower = (bool) $this->conn->query("SHOW TABLES LIKE 'seat_prices'")->fetchColumn();
+            $hasCamel = (bool) $this->conn->query("SHOW TABLES LIKE 'SeatPrices'")->fetchColumn();
+            if (!$hasLower && !$hasCamel) {
+                $this->conn->exec("CREATE TABLE seat_prices (
+                    seat_price_id INT AUTO_INCREMENT PRIMARY KEY,
+                    seat_type VARCHAR(20) NOT NULL UNIQUE,
+                    price_multiplier DECIMAL(5,2) NOT NULL,
+                    description VARCHAR(255) NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+                $this->conn->exec("INSERT INTO seat_prices (seat_type, price_multiplier, description) VALUES
+                    ('standard', 1.00, 'Ghế thường'),
+                    ('vip', 1.30, 'Ghế VIP'),
+                    ('couple', 1.80, 'Ghế đôi')");
+            } elseif (!$hasLower && $hasCamel) {
+                $this->table = 'SeatPrices';
+            }
+        } catch (Throwable $e) {
+        }
+    }
+
+    public function getAll(): array {
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} ORDER BY seat_price_id");
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll();
     }
 
-    // Get price by seat type
-    public function getByType($seat_type) {
-        $sql = "SELECT * FROM $this->table_name WHERE seat_type = :seat_type";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->bindParam(":seat_type", $seat_type);
-        $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-
-    // Update seat price
-    public function update() {
-        $sql = "UPDATE $this->table_name 
-        SET price_multiplier=:price_multiplier, description=:description 
-        WHERE seat_type=:seat_type";
-        $stmt = $this->conn->prepare($sql);
-
-        $this->price_multiplier = htmlspecialchars(strip_tags($this->price_multiplier));
-        $this->description = htmlspecialchars(strip_tags($this->description ?? ''));
-        $this->seat_type = htmlspecialchars(strip_tags($this->seat_type));
-
-        $stmt->bindParam(":price_multiplier", $this->price_multiplier);
-        $stmt->bindParam(":description", $this->description);
-        $stmt->bindParam(":seat_type", $this->seat_type);
-
-        return $stmt->execute();
-    }
-
-    // Get price multiplier for a seat type
-    public static function getPriceMultiplier($seat_type) {
-        $database = new Database();
-        $conn = $database->getConnection();
-        
-        $sql = "SELECT price_multiplier FROM SeatPrices WHERE seat_type = :seat_type";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(":seat_type", $seat_type);
-        $stmt->execute();
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        
-        return $result ? $result['price_multiplier'] : 1.00;
+    public function getByType($seatType): ?array {
+        $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE seat_type = :seat_type LIMIT 1");
+        $stmt->execute([':seat_type' => $seatType]);
+        return $stmt->fetch() ?: null;
     }
 }
 ?>

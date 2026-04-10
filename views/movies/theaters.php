@@ -11,14 +11,17 @@
 
         <?php if (!empty($theaters)): ?>
             <div class="theater-grid">
-                <?php foreach ($theaters as $cinemaName => $rooms): ?>
+                <?php foreach ($theaters as $cinema): ?>
                     <article class="theater-card">
                         <div class="theater-card-header">
                             <span class="cinema-icon">📍</span>
-                            <h3><?php echo htmlspecialchars($cinemaName); ?></h3>
+                            <h3><?php echo htmlspecialchars($cinema['name']); ?></h3>
                         </div>
+                        <?php if (!empty($cinema['address'])): ?>
+                            <p class="cinema-address"><?php echo htmlspecialchars($cinema['address']); ?></p>
+                        <?php endif; ?>
                         <ul class="room-list">
-                            <?php foreach ($rooms as $room): ?>
+                            <?php foreach ($cinema['halls'] as $room): ?>
                                 <li><?php echo htmlspecialchars($room['hall']); ?> <span class="room-capacity">(Sức chứa <?php echo number_format($room['capacity'], 0, ',', '.'); ?>)</span></li>
                             <?php endforeach; ?>
                         </ul>

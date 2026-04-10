@@ -25,7 +25,7 @@
                             <p><strong>Lý do:</strong></p>
                             <p><?php echo nl2br(htmlspecialchars($request['reason'])); ?></p>
 
-                            <form method="POST" class="admin-actions">
+                            <form method="POST" action="<?= h(admin_url('admin_approve_cancel')) ?>" class="admin-actions">
                                 <input type="hidden" name="request_id" value="<?php echo htmlspecialchars($request['request_id']); ?>" />
                                 <button type="submit" name="decision" value="approved" class="btn btn-primary">Duyệt hủy</button>
                                 <button type="submit" name="decision" value="rejected" class="btn btn-secondary">Từ chối</button>

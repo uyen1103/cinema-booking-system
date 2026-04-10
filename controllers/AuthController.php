@@ -1,41 +1,29 @@
 <?php
-require_once 'models/User.php';
-require_once 'models/Promotion.php';
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Promotion.php';
 
-// Controller xử lý các chức năng xác thực (đăng ký, đăng nhập, cập nhật profile, đổi mật khẩu, đăng xuất)
 class AuthController {
-    private function input($key, $default = '') {
+    private function input(string $key, string $default = ''): string {
         return trim($_POST[$key] ?? $default);
     }
 
-    private function validateRegisterData($data) {
+    private function validateRegisterData(array $data): array {
         $errors = [];
-
-        if (empty($data['full_name'])) {
-            $errors[] = 'Vui lòng nhập họ tên';
-        }
+        if (empty($data['full_name'])) $errors[] = 'Vui lòng nhập họ tên.';
         if (empty($data['email'])) {
-            $errors[] = 'Vui lòng nhập email';
+            $errors[] = 'Vui lòng nhập email.';
         } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email không hợp lệ';
+            $errors[] = 'Email không hợp lệ.';
         }
-        if (empty($data['phone'])) {
-            $errors[] = 'Vui lòng nhập số điện thoại';
-        }
-        if (empty($data['password'])) {
-            $errors[] = 'Vui lòng nhập mật khẩu';
-        }
-        if ($data['password'] !== $data['confirm_password']) {
-            $errors[] = 'Mật khẩu không khớp';
-        }
-
+        if (empty($data['phone'])) $errors[] = 'Vui lòng nhập số điện thoại.';
+        if (empty($data['password'])) $errors[] = 'Vui lòng nhập mật khẩu.';
+        if ($data['password'] !== $data['confirm_password']) $errors[] = 'Mật khẩu không khớp.';
         return $errors;
     }
 
-
-    public function register() {
+    public function register(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            include 'views/auth/register.php';
+            include __DIR__ . '/../views/auth/register.php';
             return;
         }
 
@@ -49,17 +37,15 @@ class AuthController {
             'confirm_password' => $this->input('confirm_password'),
         ];
 
-        $errors = $this->validateRegisterData($payload);
-
         $userModel = new User();
+        $errors = $this->validateRegisterData($payload);
         if ($userModel->emailExists($payload['email'])) {
-            $errors[] = 'Email đã được đăng ký';
+            $errors[] = 'Email đã được đăng ký.';
         }
-
         $errors = array_merge($errors, $userModel->validatePassword($payload['password']));
 
         if (!empty($errors)) {
-            include 'views/auth/register.php';
+            include __DIR__ . '/../views/auth/register.php';
             return;
         }
 
@@ -73,182 +59,138 @@ class AuthController {
         $user->role = 'customer';
         $user->status = 'active';
 
-
-
         if ($user->register()) {
-            header('Location: web.php?action=login&message=Đăng ký thành công');
+            header('Location: index.php?action=login&message=Đăng ký thành công');
             exit;
         }
 
-        $errors[] = 'Đăng ký thất bại';
-        include 'views/auth/register.php';
+        $errors[] = 'Đăng ký thất bại.';
+        include __DIR__ . '/../views/auth/register.php';
     }
 
-    // Đăng nhập
-    public function login() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    public function login(): void {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $user = new User();
-            $user->email = $_POST['email'] ?? '';
+            $user->email = trim($_POST['email'] ?? '');
             $user->password = $_POST['password'] ?? '';
 
             if ($user->login()) {
-                // Lưu thông tin user vào session
                 $_SESSION['user_id'] = $user->user_id;
                 $_SESSION['full_name'] = $user->full_name;
                 $_SESSION['email'] = $user->email;
                 $_SESSION['phone'] = $user->phone;
                 $_SESSION['role'] = $user->role;
-                header("Location: index.php");
-            } else {
-                $errors = ["Email hoặc mật khẩu không chính xác"];
-                include 'views/auth/login.php';
+                $_SESSION['avatar'] = $user->avatar;
+
+                if (in_array($user->role, ['admin', 'staff'], true)) {
+                    header('Location: index.php?action=admin_dashboard');
+                } else {
+                    header('Location: index.php');
+                }
+                exit;
             }
-        } else {
-            // Hiển thị form đăng nhập
-            include 'views/auth/login.php';
+
+            $errors = ['Email hoặc mật khẩu không chính xác, hoặc tài khoản đã bị khóa.'];
+            include __DIR__ . '/../views/auth/login.php';
+            return;
         }
+
+        include __DIR__ . '/../views/auth/login.php';
     }
 
-    // Hiển thị trang profile cá nhân
-    public function profile() {
+    public function profile(): void {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: web.php?action=login");
+            header('Location: web.php?action=login');
+            exit;
+        }
+        $userModel = new User();
+        $user = $userModel->getUserById((int) $_SESSION['user_id']);
+        include __DIR__ . '/../views/auth/profile.php';
+    }
+
+    public function editProfile(): void {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: web.php?action=login');
             exit;
         }
 
         $userModel = new User();
-        $user = $userModel->getUserById($_SESSION['user_id']);
-        include 'views/auth/profile.php';
-    }
+        $user = $userModel->getUserById((int) $_SESSION['user_id']);
 
-    // Cập nhật thông tin cá nhân
-    public function editProfile() {
-        if (!isset($_SESSION['user_id'])) {
-            header("Location: web.php?action=login");
-            exit;
-        }
-
-        $userModel = new User();
-        $user = $userModel->getUserById($_SESSION['user_id']);
-
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $userModel->user_id = $_SESSION['user_id'];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $userModel->user_id = (int) $_SESSION['user_id'];
             $userModel->full_name = trim($_POST['full_name'] ?? $user['full_name']);
             $userModel->email = trim($_POST['email'] ?? $user['email']);
             $userModel->phone = trim($_POST['phone'] ?? $user['phone']);
             $userModel->birthday = trim($_POST['birthday'] ?? $user['birthday']);
             $userModel->address = trim($_POST['address'] ?? $user['address']);
-<<<<<<< HEAD
-            $userModel->bank_account = trim($_POST['bank_account'] ?? $user['bank_account']);
-=======
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
+            $userModel->bank_account = trim($_POST['bank_account'] ?? ($user['bank_account'] ?? ''));
 
             $errors = [];
-            if (empty($userModel->full_name)) {
-                $errors[] = 'Vui lòng nhập họ tên';
-            }
+            if (empty($userModel->full_name)) $errors[] = 'Vui lòng nhập họ tên.';
             if (empty($userModel->email)) {
-                $errors[] = 'Vui lòng nhập email';
+                $errors[] = 'Vui lòng nhập email.';
             } elseif (!filter_var($userModel->email, FILTER_VALIDATE_EMAIL)) {
-                $errors[] = 'Email không hợp lệ';
+                $errors[] = 'Email không hợp lệ.';
             }
-            if (empty($userModel->phone)) {
-                $errors[] = 'Vui lòng nhập số điện thoại';
-            }
+            if (empty($userModel->phone)) $errors[] = 'Vui lòng nhập số điện thoại.';
             if ($userModel->email !== $user['email'] && $userModel->emailExists($userModel->email)) {
-                $errors[] = 'Email đã được đăng ký';
+                $errors[] = 'Email đã được đăng ký.';
             }
 
-<<<<<<< HEAD
-            // Xử lý cập nhật mật khẩu nếu có
-            $new_password = trim($_POST['new_password'] ?? '');
-            $confirm_password = trim($_POST['confirm_password'] ?? '');
-            $current_password = trim($_POST['current_password'] ?? '');
-            
-            if (!empty($new_password)) {
-                if (empty($current_password)) {
-                    $errors[] = 'Vui lòng nhập mật khẩu hiện tại';
-                } elseif ($new_password !== $confirm_password) {
-                    $errors[] = 'Mật khẩu xác nhận không khớp';
+            $newPassword = trim($_POST['new_password'] ?? '');
+            $confirmPassword = trim($_POST['confirm_password'] ?? '');
+            $currentPassword = trim($_POST['current_password'] ?? '');
+            if ($newPassword !== '') {
+                if ($currentPassword === '') {
+                    $errors[] = 'Vui lòng nhập mật khẩu hiện tại.';
+                } elseif ($newPassword !== $confirmPassword) {
+                    $errors[] = 'Mật khẩu xác nhận không khớp.';
                 } else {
-                    $passwordErrors = $userModel->validatePassword($new_password);
-                    if (!empty($passwordErrors)) {
-                        $errors = array_merge($errors, $passwordErrors);
-                    }
+                    $errors = array_merge($errors, $userModel->validatePassword($newPassword));
                 }
             }
 
-            if (empty($errors)) {
-                if ($userModel->update()) {
-                    // Cập nhật mật khẩu nếu có
-                    if (!empty($new_password)) {
-                        $changePasswordResult = $userModel->changePassword($_SESSION['user_id'], $current_password, $new_password);
-                        if ($changePasswordResult === false) {
-                            $errors[] = 'Mật khẩu hiện tại không chính xác';
-                        } elseif (is_array($changePasswordResult)) {
-                            $errors = array_merge($errors, $changePasswordResult);
-                        }
-                    }
-                    
-                    if (empty($errors)) {
-                        // Cập nhật session
-                        $_SESSION['full_name'] = $userModel->full_name;
-                        $_SESSION['email'] = $userModel->email;
-                        $_SESSION['phone'] = $userModel->phone;
-                        header("Location: web.php?action=profile&message=Cập nhật thành công");
-                        exit;
+            if (empty($errors) && $userModel->update()) {
+                if ($newPassword !== '') {
+                    $changeResult = $userModel->changePassword((int) $_SESSION['user_id'], $currentPassword, $newPassword);
+                    if ($changeResult === false) {
+                        $errors[] = 'Mật khẩu hiện tại không chính xác.';
+                    } elseif (is_array($changeResult)) {
+                        $errors = array_merge($errors, $changeResult);
                     }
                 }
+
                 if (empty($errors)) {
-                    $errors = ["Cập nhật thất bại"];
-                }
-=======
-            if (empty($errors)) {
-                if ($userModel->update()) {
-                    // Cập nhật session
                     $_SESSION['full_name'] = $userModel->full_name;
                     $_SESSION['email'] = $userModel->email;
                     $_SESSION['phone'] = $userModel->phone;
-                    header("Location: web.php?action=profile&message=Cập nhật thành công");
+                    header('Location: web.php?action=profile&message=Cập nhật thành công');
                     exit;
                 }
-                $errors = ["Cập nhật thất bại"];
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
             }
 
-            $user = [
-                'full_name' => $userModel->full_name,
-                'email' => $userModel->email,
-                'phone' => $userModel->phone,
-                'birthday' => $userModel->birthday,
-                'address' => $userModel->address,
-<<<<<<< HEAD
-                'bank_account' => $userModel->bank_account,
-=======
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
-            ];
-            include 'views/auth/edit-profile.php';
-        } else {
-            include 'views/auth/edit-profile.php';
+            if (empty($errors)) {
+                $errors[] = 'Cập nhật thất bại.';
+            }
+            $user = $userModel->getUserById((int) $_SESSION['user_id']);
         }
+
+        include __DIR__ . '/../views/auth/edit-profile.php';
     }
 
-    // Quên mật khẩu / xử lý gửi mã xác nhận
-    public function forgotPassword() {
+    public function forgotPassword(): void {
         $errors = [];
         $success = '';
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email'] ?? '');
-
-            if (empty($email)) {
+            if ($email === '') {
                 $errors[] = 'Vui lòng nhập email';
             } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Email không hợp lệ';
             } else {
                 $userModel = new User();
                 if ($userModel->emailExists($email)) {
-                    // Ở đây giả lập gửi mã xác nhận vì chưa có mail server
                     $success = 'Mã xác nhận đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.';
                 } else {
                     $errors[] = 'Email chưa được đăng ký';
@@ -256,24 +198,23 @@ class AuthController {
             }
         }
 
-        include 'views/auth/forgot-password.php';
+        include __DIR__ . '/../views/auth/forgot-password.php';
     }
 
-    // Xem voucher của tôi
-    public function vouchers() {
+    public function vouchers(): void {
         if (!isset($_SESSION['user_id'])) {
-            header("Location: web.php?action=login");
+            header('Location: web.php?action=login');
             exit;
         }
-
         $promotionModel = new Promotion();
         $vouchers = $promotionModel->getActivePromotions();
-        include 'views/auth/vouchers.php';
+        include __DIR__ . '/../views/auth/vouchers.php';
     }
 
-    // Đăng xuất
-    public function logout() {
+    public function logout(): void {
         session_destroy();
-        header("Location: index.php");
+        header('Location: index.php');
+        exit;
     }
 }
+?>
