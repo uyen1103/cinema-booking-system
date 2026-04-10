@@ -68,7 +68,7 @@ if (strpos($roomName, ' - ') !== false) {
 
             <!-- Action Button -->
             <div class="success-actions">
-                <a href="web.php?action=history" class="btn btn-primary btn-full">Xem lịch sử đặt vé</a>
+                <a href="<?= h(app_url('history')) ?>" class="btn btn-primary btn-full">Xem lịch sử đặt vé</a>
             </div>
         </div>
     </div>

@@ -6,5 +6,5 @@ password = VALUES(password),
 role = 'admin',
 status = 'active';
 
--- Email: admin@test.com
--- Password: password
+--Email: admin@test.com
+--Password: password

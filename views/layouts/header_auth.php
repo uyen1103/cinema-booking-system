@@ -30,8 +30,8 @@
             <div class="header-toolbar">
                 <div class="header-right">
                     <div class="nav-group nav-actions">
-                        <a href="web.php?action=login" class="nav-link">ĐĂNG NHẬP</a>
-                        <a href="web.php?action=register" class="nav-link">ĐĂNG KÝ</a>
+                        <a href="<?= h(app_url('login')) ?>" class="nav-link">ĐĂNG NHẬP</a>
+                        <a href="<?= h(app_url('register')) ?>" class="nav-link">ĐĂNG KÝ</a>
                     </div>
                 </div>
             </div>

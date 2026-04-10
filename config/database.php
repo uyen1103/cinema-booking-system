@@ -1,29 +1,26 @@
 <?php
-
-// quản lý kết nối database
 class Database {
-    private $host = 'localhost';
-    private $db_name = 'movie_booking';
-    private $username = 'root';
-    private $password = '';
+    private string $host = 'localhost';
+    private string $db_name = 'movie_booking';
+    private string $username = 'root';
+    private string $password = '';
 
-    public function getConnection() {
+    public function getConnection(): ?PDO {
         try {
-            // tạo kết nối PDO
             $conn = new PDO(
-                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8",
+                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
                 $this->username,
-                $this->password
+                $this->password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                ]
             );
 
-            // bật báo lỗi
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+            $conn->exec("SET NAMES utf8mb4");
             return $conn;
-
         } catch (PDOException $e) {
-            echo "Lỗi kết nối: " . $e->getMessage();
-            return null;
+            die('Lỗi kết nối CSDL: ' . $e->getMessage());
         }
     }
 }

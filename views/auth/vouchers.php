@@ -18,17 +18,17 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="web.php?action=profile" class="profile-sidebar-item">
+                <a href="<?= h(app_url('profile')) ?>" class="profile-sidebar-item">
                     <i class="ri-user-smile-line"></i><span>Thông tin cá nhân</span>
                 </a>
-                <a href="web.php?action=history" class="profile-sidebar-item">
+                <a href="<?= h(app_url('history')) ?>" class="profile-sidebar-item">
                     <i class="ri-history-line"></i><span>Lịch sử đặt vé</span>
                 </a>
-                <a href="web.php?action=vouchers" class="profile-sidebar-item active">
+                <a href="<?= h(app_url('vouchers')) ?>" class="profile-sidebar-item active">
                     <i class="ri-coupon-2-line"></i><span>Voucher của tôi</span>
                 </a>
                 <div class="nav-divider"></div>
-                <a href="web.php?action=logout" class="profile-sidebar-item">
+                <a href="<?= h(app_url('logout')) ?>" class="profile-sidebar-item">
                     <i class="ri-logout-box-r-line"></i><span>Đăng xuất</span>
                 </a>
             </nav>
@@ -135,7 +135,7 @@
                     <div class="empty-state" style="grid-column: 1/-1;">
                         <h2>Chưa có voucher nào</h2>
                         <p>Hiện tại không có mã giảm giá nào khả dụng. Vui lòng quay lại sau!</p>
-                        <a href="web.php?action=promotions" class="btn btn-primary">Xem khuyến mãi</a>
+                        <a href="<?= h(app_url('promotions')) ?>" class="btn btn-primary">Xem khuyến mãi</a>
                     </div>
                 <?php endif; ?>
             </div>

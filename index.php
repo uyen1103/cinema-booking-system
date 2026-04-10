@@ -1,7 +1,8 @@
 <?php
-// Khởi động session để lưu trạng thái đăng nhập
 session_start();
 
-// Gọi file định tuyến chính
-require_once 'routes/web.php';
-?>
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+require_once __DIR__ . '/helpers/functions.php';
+require_once __DIR__ . '/routes/web.php';

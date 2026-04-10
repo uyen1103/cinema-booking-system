@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (bookNowBtn) {
             if (showtimeId) {
-                bookNowBtn.href = `web.php?action=book&showtime_id=${showtimeId}`;
+                bookNowBtn.href = `index.php?action=book&showtime_id=${showtimeId}`;
                 bookNowBtn.classList.remove('btn-disabled');
                 bookNowBtn.removeAttribute('aria-disabled');
             } else {

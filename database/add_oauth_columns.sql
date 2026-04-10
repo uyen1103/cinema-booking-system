@@ -7,8 +7,4 @@ ALTER TABLE Users ADD COLUMN birthday DATE;
 ALTER TABLE Users ADD COLUMN address VARCHAR(255);
 
 -- Tạo UNIQUE constraint cho oauth_provider và oauth_id
-<<<<<<< HEAD
 ALTER TABLE Users ADD UNIQUE KEY unique_oauth (oauth_provider, oauth_id);
-=======
-ALTER TABLE Users ADD UNIQUE KEY unique_oauth (oauth_provider, oauth_id);
->>>>>>> 79d8d1d56f94b32a57937290034834493747c163
