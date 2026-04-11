@@ -481,17 +481,29 @@ FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM users WHERE email = 'ngoctu@gmail.com');
 
 INSERT INTO movies (title, description, director, `cast`, genre, duration, release_date, poster, poster_url, banner, trailer_url, status)
+<<<<<<< HEAD
 SELECT 'Lật Mặt 7: Một Điều Ước', 'Bộ phim tình cảm gia đình cảm động của đạo diễn Lý Hải.', 'Lý Hải', 'Đinh Y Nhung, Thanh Hiền, Trương Minh Cường', 'Hành động, Tâm lý', 138, '2024-04-26', 'lat-mat-7.jpg', 'lat-mat-7.jpg', 'lat-mat-7.jpg', 'https://www.youtube.com/embed/d1ZHdosjNX8', '1'
+=======
+SELECT 'Lật Mặt 7: Một Điều Ước', 'Bộ phim tình cảm gia đình cảm động của đạo diễn Lý Hải.', 'Lý Hải', 'Đinh Y Nhung, Thanh Hiền, Trương Minh Cường', 'Hành động, Tâm lý', 138, '2024-04-26', 'assets/images/default-poster.svg', 'assets/images/default-poster.svg', 'assets/images/default-banner.svg', 'https://www.youtube.com/embed/d1ZHdosjNX8', '1'
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM movies WHERE title = 'Lật Mặt 7: Một Điều Ước');
 
 INSERT INTO movies (title, description, director, `cast`, genre, duration, release_date, poster, poster_url, banner, trailer_url, status)
+<<<<<<< HEAD
 SELECT 'Mai', 'Câu chuyện tình cảm nhiều biến cố của đạo diễn Trấn Thành.', 'Trấn Thành', 'Phương Anh Đào, Tuấn Trần', 'Tâm lý, Tình cảm', 131, '2024-05-10', 'mai.jpg', 'mai.jpg', 'mai.jpg', 'https://www.youtube.com/embed/EX6clvId19s', '2'
+=======
+SELECT 'Mai', 'Câu chuyện tình cảm nhiều biến cố của đạo diễn Trấn Thành.', 'Trấn Thành', 'Phương Anh Đào, Tuấn Trần', 'Tâm lý, Tình cảm', 131, '2024-05-10', 'assets/images/default-poster.svg', 'assets/images/default-poster.svg', 'assets/images/default-banner.svg', 'https://www.youtube.com/embed/EX6clvId19s', '2'
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM movies WHERE title = 'Mai');
 
 INSERT INTO movies (title, description, director, `cast`, genre, duration, release_date, poster, poster_url, banner, trailer_url, status)
+<<<<<<< HEAD
 SELECT 'Godzilla x Kong: Đế Chế Mới', 'Cuộc chạm trán hoành tráng giữa các quái thú khổng lồ.', 'Adam Wingard', 'Rebecca Hall, Dan Stevens', 'Hành động, Viễn tưởng', 115, '2024-03-29', 'godzilla-x-kong-de-che-moi.jpg', 'godzilla-x-kong-de-che-moi.jpg', 'godzilla-x-kong-de-che-moi.jpg', 'https://www.youtube.com/embed/5XkgG_AAQs0', '1'
+=======
+SELECT 'Godzilla x Kong: Đế Chế Mới', 'Cuộc chạm trán hoành tráng giữa các quái thú khổng lồ.', 'Adam Wingard', 'Rebecca Hall, Dan Stevens', 'Hành động, Viễn tưởng', 115, '2024-03-29', 'assets/images/default-poster.svg', 'assets/images/default-poster.svg', 'assets/images/default-banner.svg', 'https://www.youtube.com/embed/5XkgG_AAQs0', '1'
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 FROM DUAL
 WHERE NOT EXISTS (SELECT 1 FROM movies WHERE title = 'Godzilla x Kong: Đế Chế Mới');
 

@@ -124,6 +124,10 @@ class AuthController {
             $userModel->phone = trim($_POST['phone'] ?? $user['phone']);
             $userModel->birthday = trim($_POST['birthday'] ?? $user['birthday']);
             $userModel->address = trim($_POST['address'] ?? $user['address']);
+<<<<<<< HEAD
+=======
+            $userModel->bank_account = trim($_POST['bank_account'] ?? ($user['bank_account'] ?? ''));
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 
             $errors = [];
             if (empty($userModel->full_name)) $errors[] = 'Vui lòng nhập họ tên.';
@@ -178,6 +182,7 @@ class AuthController {
         include __DIR__ . '/../views/auth/edit-profile.php';
     }
 
+<<<<<<< HEAD
     public function linkBankAccount(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: web.php?action=login');
@@ -222,6 +227,8 @@ class AuthController {
         include __DIR__ . '/../views/auth/link-bank-account.php';
     }
 
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
     public function forgotPassword(): void {
         $errors = [];
         $success = '';
@@ -254,6 +261,7 @@ class AuthController {
         include __DIR__ . '/../views/auth/vouchers.php';
     }
 
+<<<<<<< HEAD
     public function changePassword(): void {
         if (!isset($_SESSION['user_id'])) {
             header('Location: web.php?action=login');
@@ -303,6 +311,8 @@ class AuthController {
         include __DIR__ . '/../views/auth/change-password.php';
     }
 
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
     public function logout(): void {
         session_destroy();
         header('Location: index.php');

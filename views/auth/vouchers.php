@@ -13,9 +13,13 @@
                 </div>
                 <div class="user-meta">
                     <h3 class="user-name-sidebar"><?= htmlspecialchars($_SESSION['full_name'] ?? 'Người dùng') ?></h3>
+<<<<<<< HEAD
                     <?php if (!isAdmin()): ?>
                     <span class="badge-membership">Thành viên bạc</span>
                     <?php endif; ?>
+=======
+                    <span class="badge-membership">Thành viên bạc</span>
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 </div>
             </div>
 
@@ -23,13 +27,17 @@
                 <a href="<?= h(app_url('profile')) ?>" class="profile-sidebar-item">
                     <i class="ri-user-smile-line"></i><span>Thông tin cá nhân</span>
                 </a>
+<<<<<<< HEAD
                 <?php if (!isAdmin()): ?>
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 <a href="<?= h(app_url('history')) ?>" class="profile-sidebar-item">
                     <i class="ri-history-line"></i><span>Lịch sử đặt vé</span>
                 </a>
                 <a href="<?= h(app_url('vouchers')) ?>" class="profile-sidebar-item active">
                     <i class="ri-coupon-2-line"></i><span>Voucher của tôi</span>
                 </a>
+<<<<<<< HEAD
                 <?php endif; ?>
                 <a href="<?= h(app_url('change-password')) ?>" class="profile-sidebar-item">
                     <i class="ri-lock-password-line"></i><span>Đổi mật khẩu</span>
@@ -44,6 +52,8 @@
                     <i class="ri-dashboard-line"></i><span>Quay về Admin</span>
                 </a>
                 <?php endif; ?>
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 <div class="nav-divider"></div>
                 <a href="<?= h(app_url('logout')) ?>" class="profile-sidebar-item">
                     <i class="ri-logout-box-r-line"></i><span>Đăng xuất</span>
@@ -156,12 +166,15 @@
                     </div>
                 <?php endif; ?>
             </div>
+<<<<<<< HEAD
 
             <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e1e4e8;">
                 <a href="<?= h(app_url('profile')) ?>" class="btn-back-link">
                     <i class="ri-arrow-go-back-line"></i><span>Quay lại</span>
                 </a>
             </div>
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
         </main>
     </div>
 </div>

@@ -39,4 +39,7 @@ Các mục admin từ **4.3.12 đến 4.3.19**:
   - `assets/uploads/promotions`
 - Các nút đã có hiệu ứng hover và shadow bằng CSS.
 - Báo cáo đang lấy dữ liệu trực tiếp từ bảng đơn hàng, vé, phim, khuyến mãi và khách hàng.
+<<<<<<< HEAD
 - Thêm database : 'final_xampp_setup.sql' và 'sample_data.sql'
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d

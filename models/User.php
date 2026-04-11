@@ -14,7 +14,10 @@ class User {
     public ?string $birthday = null;
     public ?string $address = null;
     public ?string $bank_account = null;
+<<<<<<< HEAD
     public ?string $e_wallet_account = null;
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
     public string $role = 'customer';
     public string $status = 'active';
     public ?string $avatar = null;
@@ -52,7 +55,10 @@ class User {
         $this->addColumnIfMissing('birthday', "DATE NULL AFTER phone");
         $this->addColumnIfMissing('address', "VARCHAR(255) NULL AFTER birthday");
         $this->addColumnIfMissing('bank_account', "VARCHAR(50) NULL AFTER address");
+<<<<<<< HEAD
         $this->addColumnIfMissing('e_wallet_account', "VARCHAR(50) NULL AFTER bank_account");
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
         $this->addColumnIfMissing('avatar', "VARCHAR(255) NULL AFTER status");
         $this->addColumnIfMissing('position', "VARCHAR(100) NULL AFTER role");
         $this->addColumnIfMissing('branch_name', "VARCHAR(150) NULL AFTER position");
@@ -121,8 +127,12 @@ class User {
                     phone = :phone,
                     birthday = :birthday,
                     address = :address,
+<<<<<<< HEAD
                     bank_account = :bank_account,
                     e_wallet_account = :e_wallet_account
+=======
+                    bank_account = :bank_account
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 WHERE user_id = :user_id";
         $stmt = $this->conn->prepare($sql);
 
@@ -133,7 +143,10 @@ class User {
             ':birthday' => $this->birthday ?: null,
             ':address' => $this->address ?: null,
             ':bank_account' => $this->bank_account ?: null,
+<<<<<<< HEAD
             ':e_wallet_account' => $this->e_wallet_account ?: null,
+=======
+>>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
             ':user_id' => $this->user_id,
         ]);
     }
