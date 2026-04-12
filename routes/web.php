@@ -82,15 +82,12 @@ switch ($action) {
     case 'vouchers':
         $auth->vouchers();
         break;
-<<<<<<< HEAD
     case 'change-password':
         $auth->changePassword();
         break;
     case 'link-bank-account':
         $auth->linkBankAccount();
         break;
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
     case 'forgot-password':
         $auth->forgotPassword();
         break;

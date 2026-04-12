@@ -44,46 +44,10 @@
             <div class="form-row">
                 <div class="form-group">
                     <label>Địa chỉ</label>
-<<<<<<< HEAD
                     <input type="text" name="address" placeholder="Quận 1, TP. HCM" class="form-control" style="width: 100%;" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
                 </div>
             </div>
 
-=======
-                    <input type="text" name="address" placeholder="Quận 1, TP. HCM" class="form-control" value="<?= htmlspecialchars($user['address'] ?? '') ?>">
-                </div>
-                <div class="form-group">
-                    <label>Số tài khoản ngân hàng</label>
-                    <input type="text" name="bank_account" placeholder="Vd: 0123456789" class="form-control" value="<?= htmlspecialchars($user['bank_account'] ?? '') ?>">
-                </div>
-            </div>
-
-            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
-            <h3 style="margin-bottom: 20px; font-size: 16px;">Đổi mật khẩu (nếu muốn)</h3>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Mật khẩu hiện tại</label>
-                    <input type="password" name="current_password" placeholder="Nhập mật khẩu hiện tại" class="form-control">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Mật khẩu mới</label>
-                    <input type="password" name="new_password" placeholder="Nhập mật khẩu mới" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Xác nhận mật khẩu mới</label>
-                    <input type="password" name="confirm_password" placeholder="Xác nhận mật khẩu mới" class="form-control">
-                </div>
-            </div>
-
-            <small style="display: block; margin: 10px 0; color: #666;">
-                Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.
-            </small>
-
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
             <button type="submit" class="btn-primary">Lưu thay đổi</button>
         </form>
 

@@ -13,13 +13,9 @@
                 </div>
                 <div class="user-meta">
                     <h3 class="user-name-sidebar"><?= htmlspecialchars($user['full_name'] ?? 'Người dùng') ?></h3>
-<<<<<<< HEAD
                     <?php if (!isAdmin()): ?>
                     <span class="badge-membership">Thành viên bạc</span>
                     <?php endif; ?>
-=======
-                    <span class="badge-membership">Thành viên bạc</span>
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 </div>
             </div>
 
@@ -27,17 +23,13 @@
                 <a href="<?= h(app_url('profile')) ?>" class="profile-sidebar-item active">
                     <i class="ri-user-smile-line"></i><span>Thông tin cá nhân</span>
                 </a>
-<<<<<<< HEAD
                 <?php if (!isAdmin()): ?>
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 <a href="<?= h(app_url('history')) ?>" class="profile-sidebar-item">
                     <i class="ri-history-line"></i><span>Lịch sử đặt vé</span>
                 </a>
                 <a href="<?= h(app_url('vouchers')) ?>" class="profile-sidebar-item">
                     <i class="ri-coupon-2-line"></i><span>Voucher của tôi</span>
                 </a>
-<<<<<<< HEAD
                 <?php endif; ?>
                 <a href="<?= h(app_url('change-password')) ?>" class="profile-sidebar-item">
                     <i class="ri-lock-password-line"></i><span>Đổi mật khẩu</span>
@@ -52,8 +44,6 @@
                     <i class="ri-dashboard-line"></i><span>Quay về Admin</span>
                 </a>
                 <?php endif; ?>
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 <div class="nav-divider"></div>
                 <a href="<?= h(app_url('logout')) ?>" class="profile-sidebar-item">
                     <i class="ri-logout-box-r-line"></i><span>Đăng xuất</span>
@@ -77,13 +67,9 @@
                 </div>
                 <div>
                     <h2 class="user-full-name"><?= htmlspecialchars($user['full_name'] ?? 'Họ và Tên') ?></h2>
-<<<<<<< HEAD
                     <?php if (!isAdmin()): ?>
                     <span class="badge-membership">Thành viên bạc</span>
                     <?php endif; ?>
-=======
-                    <span class="badge-membership">Thành viên bạc</span>
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                 </div>
             </div>
 
@@ -112,32 +98,23 @@
 
                 <div class="info-row">
                     <div class="info-group">
-                        <span class="info-label">Địa chỉ</span>
-<<<<<<< HEAD
+                        <span class="info-label">Mại nhập hoà đơn</span>
                         <p class="info-value" style="width: 100%;"><?= htmlspecialchars($user['address'] ?? 'Chưa cập nhật') ?></p>
                     </div>
                 </div>
 
                 <?php if (!isAdmin()): ?>
                 <div class="info-row">
-=======
-                        <p class="info-value"><?= htmlspecialchars($user['address'] ?? 'Chưa cập nhật') ?></p>
-                    </div>
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
                     <div class="info-group">
                         <span class="info-label">Số tài khoản ngân hàng</span>
                         <p class="info-value"><?= htmlspecialchars($user['bank_account'] ?? 'Chưa cập nhật') ?></p>
                     </div>
-<<<<<<< HEAD
                     <div class="info-group">
                         <span class="info-label">Số tài khoản ví điện tử</span>
                         <p class="info-value"><?= htmlspecialchars($user['e_wallet_account'] ?? 'Chưa cập nhật') ?></p>
                     </div>
                 </div>
                 <?php endif; ?>
-=======
-                </div>
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
             </div>
 
             <a href="<?= h(app_url('edit-profile')) ?>" class="update-profile-btn">

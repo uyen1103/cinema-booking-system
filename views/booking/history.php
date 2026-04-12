@@ -1,10 +1,7 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-<<<<<<< HEAD
 <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 <div class="page-section history-page">
     <div class="container">
         <?php if (isset($_GET['message'])): ?>
@@ -78,15 +75,12 @@
                 <a href="<?= h(app_url('home')) ?>" class="btn btn-primary">Xem phim ngay</a>
             </div>
         <?php endif; ?>
-<<<<<<< HEAD
 
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e1e4e8;">
             <a href="<?= h(app_url('profile')) ?>" class="btn-back-link">
                 <i class="ri-arrow-go-back-line"></i><span>Quay lại</span>
             </a>
         </div>
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
     </div>
 </div>
 

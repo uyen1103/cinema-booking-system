@@ -1,6 +1,5 @@
 /* booking.css - booking and seat selection styles */
 
-<<<<<<< HEAD
 /* Back button link style */
 .btn-back-link {
     display: inline-flex;
@@ -30,8 +29,6 @@
     align-items: center;
 }
 
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 .booking-layout {
     display: grid;
     grid-template-columns: 1.65fr minmax(380px, 0.95fr);

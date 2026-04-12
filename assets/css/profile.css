@@ -433,7 +433,6 @@
 
 .form-actions .btn-secondary {
     width: auto;
-<<<<<<< HEAD
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -461,8 +460,6 @@
     border-color: var(--cinema-red);
     color: white;
     transform: translateX(-2px);
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
 }
 
 .payment-methods {
@@ -472,7 +469,6 @@
     text-align: center;
 }
 
-<<<<<<< HEAD
 /* Back button link style */
 .btn-back-link {
     display: inline-flex;
@@ -501,5 +497,3 @@
     display: flex;
     align-items: center;
 }
-=======
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d

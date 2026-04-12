@@ -18,7 +18,6 @@ INSERT IGNORE INTO Users (full_name, email, password, role, status, phone, birth
 'Ho Chi Minh City', NOW());
 
 -- Insert movies
-<<<<<<< HEAD
 
 INSERT IGNORE INTO movies (title, description, director, `cast`, genre, duration, release_date, poster, poster_url, banner, trailer_url, status) VALUES
 ('Bố Già','Câu chuyện về Ba Sang – con thứ hai trong 4 anh em ồn ào: Giàu, Sang, Phú, Quý. Ba Sang là một người ga lăng, “quá” tốt bụng và luôn hy sinh vì người khác dù họ có muốn hay không. Quân – Ba Sang’s son là một Youtuber trẻ hiện đại.','Trấn Thành','Trấn Thành, Tuấn Trần, Ngân Chi',
@@ -637,5 +636,3 @@ INSERT INTO SeatPrices (seat_type, price_multiplier, description) VALUES
 ('standard', 1.00, 'Ghế thường'),
 ('vip', 1.20, 'Ghế VIP'),
 ('couple', 1.40, 'Ghế đôi');
-
->>>>>>> e6dd52a270c28a0b25e9fda68fc5622028b7af4d
