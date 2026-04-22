@@ -13,7 +13,7 @@ function movie_status_badge(int $status): string {
         <h2>QUẢN LÝ PHIM</h2>
         <p>Theo dõi và cập nhật thông tin kho phim của hệ thống.</p>
     </div>
-    <a class="admin-btn admin-btn--primary" href="?action=create_movie">
+    <a class="admin-btn admin-btn--primary" href="<?= h(admin_url('admin_create_movie')) ?>">
         <i class="fa-solid fa-plus"></i>
         <span>Thêm phim mới</span>
     </a>
@@ -117,14 +117,14 @@ function movie_status_badge(int $status): string {
                 <?php else: ?>
                     <?php foreach ($movies as $movie): ?>
                         <tr>
-                            <td><img class="admin-thumb admin-thumb--poster" src="<?= h($movie['poster'] ?: 'assets/images/default-poster.svg') ?>" alt="Poster"></td>
+                            <td><img class="admin-thumb admin-thumb--poster" src="<?= h(($movie['poster'] ?? $movie['poster_url'] ?? '') ?: 'assets/images/default-poster.svg') ?>" alt="Poster"></td>
                             <td>
                                 <div class="admin-movie-mini">
-                                    <img src="<?= h($movie['poster'] ?: 'assets/images/default-poster.svg') ?>" alt="Poster">
+                                    <img src="<?= h(($movie['poster'] ?? $movie['poster_url'] ?? '') ?: 'assets/images/default-poster.svg') ?>" alt="Poster">
                                     <div>
-                                        <div class="fw-bold"><?= h($movie['title']) ?></div>
+                                        <div class="fw-bold"><?= h(($movie['title'] ?? 'Chưa cập nhật')) ?></div>
                                         <div class="text-muted small">Đạo diễn: <?= h($movie['director']) ?></div>
-                                        <div class="text-muted small">Vé đã bán: <?= number_format((int) $movie['sold_tickets']) ?></div>
+                                        <div class="text-muted small">Vé đã bán: <?= number_format((int) ($movie['sold_tickets'] ?? 0)) ?></div>
                                     </div>
                                 </div>
                             </td>
@@ -134,15 +134,15 @@ function movie_status_badge(int $status): string {
                                     <span class="admin-chip"><?= h($genre) ?></span>
                                 <?php endforeach; ?>
                             </td>
-                            <td><?= (int) $movie['duration'] ?> phút</td>
-                            <td><?= h(format_date($movie['release_date'])) ?></td>
+                            <td><?= (int) ($movie['duration'] ?? 0) ?> phút</td>
+                            <td><?= h(format_date($movie['release_date'] ?? null)) ?></td>
                             <td><?= movie_status_badge((int) $movie['status']) ?></td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="?action=edit_movie&id=<?= (int) $movie['movie_id'] ?>">
+                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url('admin_edit_movie', ['id' => (int) ($movie['movie_id'] ?? 0)])) ?>">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
-                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteMovieModal<?= (int) $movie['movie_id'] ?>">
+                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteMovieModal<?= (int) ($movie['movie_id'] ?? 0) ?>">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </div>

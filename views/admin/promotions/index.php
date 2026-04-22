@@ -95,28 +95,28 @@ function promotion_type_label(string $type): string {
                 <?php else: ?>
                     <?php foreach ($promotions as $promotion): ?>
                         <tr>
-                            <td class="fw-bold text-danger"><?= h($promotion['code']) ?></td>
+                            <td class="fw-bold text-danger"><?= h(($promotion['code'] ?? $promotion['promo_code'] ?? '')) ?></td>
                             <td>
-                                <div class="fw-bold"><?= h($promotion['title']) ?></div>
-                                <div class="text-muted small"><?= h($promotion['description'] ?: 'Chưa có mô tả') ?></div>
+                                <div class="fw-bold"><?= h(($promotion['title'] ?? 'Khuyến mãi')) ?></div>
+                                <div class="text-muted small"><?= h(($promotion['description'] ?? '') ?: 'Chưa có mô tả') ?></div>
                             </td>
                             <td class="fw-bold text-success">
-                                <?= $promotion['discount_type'] === 'percent'
-                                    ? h(rtrim(rtrim(number_format((float) $promotion['discount_value'], 2, '.', ''), '0'), '.')) . '%'
-                                    : h(format_currency($promotion['discount_value'])) ?>
+                                <?= ($promotion['discount_type'] ?? 'percent') === 'percent'
+                                    ? h(rtrim(rtrim(number_format((float) ($promotion['discount_value'] ?? 0), 2, '.', ''), '0'), '.')) . '%'
+                                    : h(format_currency(($promotion['discount_value'] ?? 0))) ?>
                             </td>
-                            <td><span class="admin-chip"><?= h(promotion_type_label($promotion['discount_type'])) ?></span></td>
+                            <td><span class="admin-chip"><?= h(promotion_type_label(($promotion['discount_type'] ?? 'percent'))) ?></span></td>
                             <td>
                                 <div><?= h(format_date($promotion['start_date'])) ?> - <?= h(format_date($promotion['end_date'])) ?></div>
-                                <div class="text-muted small">Đã dùng: <?= number_format((int) $promotion['used_count']) ?><?= $promotion['usage_limit'] ? ' / ' . number_format((int) $promotion['usage_limit']) : '' ?></div>
+                                <div class="text-muted small">Đã dùng: <?= number_format((int) ($promotion['used_count'] ?? 0)) ?><?= ($promotion['usage_limit'] ?? 0) ? ' / ' . number_format((int) ($promotion['usage_limit'] ?? 0)) : '' ?></div>
                             </td>
                             <td><?= promotion_status_badge($promotion) ?></td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url('admin_edit_promotion', ['id' => (int) $promotion['promotion_id']])) ?>">
+                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url('admin_edit_promotion', ['id' => (int) ($promotion['promotion_id'] ?? 0)])) ?>">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
-                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deletePromotionModal<?= (int) $promotion['promotion_id'] ?>">
+                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deletePromotionModal<?= (int) ($promotion['promotion_id'] ?? 0) ?>">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </div>

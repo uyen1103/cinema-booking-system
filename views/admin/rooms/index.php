@@ -11,7 +11,7 @@ function room_status_badge(int $status): string {
         <h2>QUẢN LÝ PHÒNG CHIẾU VÀ GHẾ</h2>
         <p>Theo dõi trạng thái vận hành phòng chiếu và cấu trúc ghế hiện có.</p>
     </div>
-    <a class="admin-btn admin-btn--primary" href="?action=create_room">
+    <a class="admin-btn admin-btn--primary" href="<?= h(admin_url('admin_create_room')) ?>">
         <i class="fa-solid fa-plus"></i>
         <span>Thêm phòng chiếu</span>
     </a>
@@ -90,22 +90,22 @@ function room_status_badge(int $status): string {
                     <?php foreach ($rooms as $room): ?>
                         <tr>
                             <td>
-                                <div class="fw-bold"><?= h($room['name']) ?></div>
-                                <div class="text-muted small"><?= (int) ($room['total_seats'] ?? 0) ?> ghế / <?= (int) ($room['active_seats'] ?? 0) ?> ghế hoạt động</div>
+                                <div class="fw-bold"><?= h(($room['name'] ?? $room['room_name'] ?? 'Chưa cập nhật')) ?></div>
+                                <div class="text-muted small"><?= (int) (($room['total_seats'] ?? $room['total_capacity'] ?? 0) ?? 0) ?> ghế / <?= (int) (($room['active_seats'] ?? 0) ?? 0) ?> ghế hoạt động</div>
                             </td>
-                            <td><?= number_format((int) $room['capacity']) ?> ghế</td>
+                            <td><?= number_format((int) ($room['capacity'] ?? 0)) ?> ghế</td>
                             <td><?= h(substr($room['opening_time'], 0, 5)) ?> - <?= h(substr($room['closing_time'], 0, 5)) ?></td>
-                            <td><?= room_status_badge((int) $room['status']) ?></td>
+                            <td><?= room_status_badge((int) ($room['status'] ?? 0)) ?></td>
                             <td><?= h($room['maintenance_reason'] ?: '—') ?></td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a class="admin-btn admin-btn--ghost admin-btn--icon" href="?action=room_seats&id=<?= (int) $room['room_id'] ?>" title="Sơ đồ ghế">
+                                    <a class="admin-btn admin-btn--ghost admin-btn--icon" href="<?= h(admin_url('admin_room_seats', ['id' => (int) ($room['room_id'] ?? 0)])) ?>" title="Sơ đồ ghế">
                                         <i class="fa-solid fa-couch"></i>
                                     </a>
-                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="?action=edit_room&id=<?= (int) $room['room_id'] ?>" title="Chỉnh sửa">
+                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url('admin_edit_room', ['id' => (int) ($room['room_id'] ?? 0)])) ?>" title="Chỉnh sửa">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
-                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteRoomModal<?= (int) $room['room_id'] ?>" title="Xóa">
+                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteRoomModal<?= (int) ($room['room_id'] ?? 0) ?>" title="Xóa">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </div>

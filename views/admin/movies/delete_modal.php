@@ -13,7 +13,7 @@
                     Phim, lịch chiếu và dữ liệu liên quan sẽ bị xóa nếu cơ sở dữ liệu đang bật khóa ngoại.
                 </div>
 
-                <form method="POST" action="?action=delete_movie" class="d-flex justify-content-center gap-2">
+                <form method="POST" action="<?= h(admin_url('admin_delete_movie')) ?>" class="d-flex justify-content-center gap-2">
                     <input type="hidden" name="movie_id" value="<?= (int) $movie['movie_id'] ?>">
                     <button class="admin-btn admin-btn--light" type="button" data-bs-dismiss="modal">Hủy</button>
                     <button class="admin-btn admin-btn--danger" type="submit">Xác nhận xóa</button>

@@ -56,6 +56,19 @@ class PromotionController {
             $this->redirect(admin_url('admin_create_promotion'));
         }
 
+        if (empty($_POST['title']) || empty($_POST['start_date']) || empty($_POST['end_date'])) {
+            set_flash('danger', 'Vui lòng nhập đầy đủ tên chương trình và thời gian áp dụng.');
+            $this->redirect(admin_url('admin_create_promotion'));
+        }
+        if (strtotime((string)($_POST['start_date'] ?? '')) >= strtotime((string)($_POST['end_date'] ?? ''))) {
+            set_flash('danger', 'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.');
+            $this->redirect(admin_url('admin_create_promotion'));
+        }
+        if ((float)($_POST['discount_value'] ?? 0) <= 0) {
+            set_flash('danger', 'Giá trị khuyến mãi phải lớn hơn 0.');
+            $this->redirect(admin_url('admin_create_promotion'));
+        }
+
         $imagePath = upload_file($_FILES['image_path'] ?? [], 'assets/uploads/promotions', ['jpg', 'jpeg', 'png', 'webp', 'svg'], 'promotion');
 
         $data = $_POST;
@@ -105,6 +118,19 @@ class PromotionController {
             $this->redirect(admin_url('admin_edit_promotion', ['id' => $id]));
         }
 
+        if (empty($_POST['title']) || empty($_POST['start_date']) || empty($_POST['end_date'])) {
+            set_flash('danger', 'Vui lòng nhập đầy đủ tên chương trình và thời gian áp dụng.');
+            $this->redirect(admin_url('admin_edit_promotion', ['id' => $id]));
+        }
+        if (strtotime((string)($_POST['start_date'] ?? '')) >= strtotime((string)($_POST['end_date'] ?? ''))) {
+            set_flash('danger', 'Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc.');
+            $this->redirect(admin_url('admin_edit_promotion', ['id' => $id]));
+        }
+        if ((float)($_POST['discount_value'] ?? 0) <= 0) {
+            set_flash('danger', 'Giá trị khuyến mãi phải lớn hơn 0.');
+            $this->redirect(admin_url('admin_edit_promotion', ['id' => $id]));
+        }
+
         $newImage = upload_file($_FILES['image_path'] ?? [], 'assets/uploads/promotions', ['jpg', 'jpeg', 'png', 'webp', 'svg'], 'promotion');
 
         $data = $_POST;
@@ -139,7 +165,9 @@ class PromotionController {
             $this->redirect(admin_url('admin_promotions'));
         }
 
-        if ($this->promotionModel->delete($id)) {
+        if (!$this->promotionModel->canDelete($id)) {
+            set_flash('danger', 'Không thể xóa khuyến mãi đã được áp dụng cho hóa đơn.');
+        } elseif ($this->promotionModel->delete($id)) {
             delete_local_file($promotion['image_path'] ?? null);
             set_flash('success', 'Đã xóa chương trình khuyến mãi.');
         } else {

@@ -62,6 +62,11 @@ class Movie {
                 $this->conn->exec("ALTER TABLE showtimes ADD COLUMN base_price DECIMAL(10,2) NULL AFTER end_time");
                 $this->conn->exec("UPDATE showtimes SET base_price = price");
             }
+            // Refresh columns after any schema changes
+            $showtimeCols = $this->fetchColumns('showtimes');
+            if (isset($showtimeCols['base_price']) && isset($showtimeCols['price'])) {
+                $this->conn->exec("UPDATE showtimes SET base_price = price WHERE COALESCE(base_price, 0) = 0 AND COALESCE(price, 0) > 0");
+            }
         } catch (Throwable $e) {
         }
     }
@@ -86,6 +91,23 @@ class Movie {
         $poster = $row['poster'] ?? $row['poster_url'] ?? '';
         $row['poster_url'] = $poster;
         $row['poster'] = $poster;
+        return $row;
+    }
+
+
+    private function normalizeAdminMovieRow(array $row): array {
+        $row = $this->normalizePublicMovieRow($row);
+        $row['movie_id'] = (int) ($row['movie_id'] ?? 0);
+        $row['title'] = (string) ($row['title'] ?? 'Chưa cập nhật');
+        $row['genre'] = (string) ($row['genre'] ?? '');
+        $row['director'] = (string) ($row['director'] ?? '');
+        $row['cast'] = (string) ($row['cast'] ?? '');
+        $row['duration'] = (int) ($row['duration'] ?? 0);
+        $row['release_date'] = $row['release_date'] ?? null;
+        $row['banner'] = (string) ($row['banner'] ?? '');
+        $row['trailer_url'] = (string) ($row['trailer_url'] ?? '');
+        $row['description'] = (string) ($row['description'] ?? '');
+        $row['sold_tickets'] = (int) ($row['sold_tickets'] ?? 0);
         return $row;
     }
 
@@ -116,13 +138,14 @@ class Movie {
         $sql .= " ORDER BY m.release_date DESC, m.movie_id DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        return array_map(fn(array $row) => $this->normalizeAdminMovieRow($row), $stmt->fetchAll());
     }
 
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE movie_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
+        $row = $stmt->fetch();
+        return $row ? $this->normalizeAdminMovieRow($row) : null;
     }
 
     public function getMovieById($movieId): ?array {
@@ -141,15 +164,6 @@ class Movie {
     }
 
     public function searchMovies($searchQuery): array {
-        $roomNameCol = 'name';
-        try {
-            $roomCols = $this->fetchColumns('rooms');
-            if (isset($roomCols['room_name'])) {
-                $roomNameCol = 'room_name';
-            }
-        } catch (Throwable $e) {
-        }
-
         $wildcardQuery = '%' . mb_strtolower($searchQuery, 'UTF-8') . '%';
         $sql = "SELECT DISTINCT m.*
                 FROM {$this->table} m
@@ -158,7 +172,7 @@ class Movie {
                 WHERE LOWER(m.title) LIKE :query
                    OR LOWER(COALESCE(m.genre,'')) LIKE :query
                    OR LOWER(COALESCE(m.description,'')) LIKE :query
-                   OR LOWER(COALESCE(r.{$roomNameCol},'')) LIKE :query
+                   OR LOWER(COALESCE(NULLIF(r.room_name, ''), r.name,'')) LIKE :query
                 ORDER BY m.release_date DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':query' => $wildcardQuery]);
@@ -166,17 +180,8 @@ class Movie {
     }
 
     public function getShowtimesByMovie($movieId): array {
-        $roomNameCol = 'name';
-        try {
-            $roomCols = $this->fetchColumns('rooms');
-            if (isset($roomCols['room_name'])) {
-                $roomNameCol = 'room_name';
-            }
-        } catch (Throwable $e) {
-        }
-
-        $sql = "SELECT s.showtime_id, s.room_id, r.{$roomNameCol} AS room_name, s.show_date, s.start_time, s.end_time,
-                       COALESCE(s.base_price, s.price) AS base_price, COALESCE(s.price, s.base_price) AS price
+        $sql = "SELECT s.showtime_id, s.room_id, COALESCE(NULLIF(r.room_name, ''), r.name) AS room_name, s.show_date, s.start_time, s.end_time,
+                       COALESCE(NULLIF(s.base_price, 0), s.price) AS base_price, COALESCE(NULLIF(s.price, 0), s.base_price) AS price
                 FROM showtimes s
                 JOIN rooms r ON s.room_id = r.room_id
                 WHERE s.movie_id = :movie_id
@@ -189,34 +194,16 @@ class Movie {
     }
 
     public function getAllRooms(): array {
-        $roomNameCol = 'name';
-        try {
-            $roomCols = $this->fetchColumns('rooms');
-            if (isset($roomCols['room_name'])) {
-                $roomNameCol = 'room_name';
-            }
-        } catch (Throwable $e) {
-        }
-
-        $stmt = $this->conn->prepare("SELECT room_id, {$roomNameCol} AS room_name, capacity FROM rooms ORDER BY {$roomNameCol}");
+        $stmt = $this->conn->prepare("SELECT room_id, COALESCE(NULLIF(room_name, ''), name) AS room_name, name, capacity FROM rooms ORDER BY COALESCE(NULLIF(room_name, ''), name)");
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
     public function getShowtimeById($showtimeId): ?array {
-        $roomNameCol = 'name';
-        try {
-            $roomCols = $this->fetchColumns('rooms');
-            if (isset($roomCols['room_name'])) {
-                $roomNameCol = 'room_name';
-            }
-        } catch (Throwable $e) {
-        }
-
-        $sql = "SELECT s.showtime_id, s.movie_id, s.room_id, r.{$roomNameCol} AS room_name,
+        $sql = "SELECT s.showtime_id, s.movie_id, s.room_id, COALESCE(NULLIF(r.room_name, ''), r.name) AS room_name,
                        s.show_date, s.start_time, s.end_time,
-                       COALESCE(s.base_price, s.price) AS base_price,
-                       COALESCE(s.price, s.base_price) AS price,
+                       COALESCE(NULLIF(s.base_price, 0), s.price) AS base_price,
+                       COALESCE(NULLIF(s.price, 0), s.base_price) AS price,
                        m.title, COALESCE(m.poster, m.poster_url) AS poster_url
                 FROM showtimes s
                 JOIN {$this->table} m ON s.movie_id = m.movie_id
@@ -253,6 +240,30 @@ class Movie {
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':showtime_id' => $showtimeId]);
         return $stmt->fetchAll();
+    }
+
+
+    public function titleExists(string $title, ?int $ignoreId = null): bool {
+        $sql = "SELECT movie_id FROM {$this->table} WHERE title = :title";
+        $params = [':title' => trim($title)];
+        if ($ignoreId !== null) {
+            $sql .= ' AND movie_id <> :ignore_id';
+            $params[':ignore_id'] = $ignoreId;
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute($params);
+        return (bool) $stmt->fetch();
+    }
+
+    public function canDelete(int $id): bool {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM showtimes WHERE movie_id = :id");
+        $stmt->execute([':id' => $id]);
+        $showtimeCount = (int) ($stmt->fetchColumn() ?: 0);
+        if ($showtimeCount > 0) {
+            return false;
+        }
+        return true;
     }
 
     public function create(array $data): bool {
@@ -294,6 +305,9 @@ class Movie {
     }
 
     public function delete(int $id): bool {
+        if (!$this->canDelete($id)) {
+            return false;
+        }
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE movie_id = :id");
         return $stmt->execute([':id' => $id]);
     }

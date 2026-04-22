@@ -18,7 +18,7 @@ function user_status_badge(string $status, bool $isStaff): string {
         <h2><?= $isStaff ? 'QUẢN LÝ NHÂN VIÊN' : 'QUẢN LÝ KHÁCH HÀNG' ?></h2>
         <p><?= $isStaff ? 'Theo dõi nhân sự, trạng thái làm việc và quyền truy cập hệ thống.' : 'Quản lý tài khoản khách hàng, trạng thái hoạt động và lịch sử giao dịch.' ?></p>
     </div>
-    <a class="admin-btn admin-btn--primary" href="?action=<?= h($createAction) ?>">
+    <a class="admin-btn admin-btn--primary" href="<?= h(admin_url($createAction)) ?>">
         <i class="fa-solid fa-plus"></i>
         <span><?= $isStaff ? 'Thêm nhân viên mới' : 'Thêm khách hàng mới' ?></span>
     </a>
@@ -121,42 +121,42 @@ function user_status_badge(string $status, bool $isStaff): string {
                 <?php else: ?>
                     <?php foreach ($users as $user): ?>
                         <tr>
-                            <td class="fw-bold text-danger">#<?= $isStaff ? 'NV-' : 'KH-' ?><?= str_pad((string) $user['user_id'], 4, '0', STR_PAD_LEFT) ?></td>
+                            <td class="fw-bold text-danger">#<?= $isStaff ? 'NV-' : 'KH-' ?><?= str_pad((string) ($user['user_id'] ?? 0), 4, '0', STR_PAD_LEFT) ?></td>
                             <td>
                                 <div class="admin-user-mini">
-                                    <img src="<?= h($user['avatar'] ?: 'assets/images/default-avatar.svg') ?>" alt="Avatar">
+                                    <img src="<?= h(($user['avatar'] ?? '') ?: 'assets/images/default-avatar.svg') ?>" alt="Avatar">
                                     <div>
-                                        <div class="fw-bold"><?= h($user['full_name']) ?></div>
-                                        <div class="text-muted small"><?= h($user['email']) ?></div>
+                                        <div class="fw-bold"><?= h(($user['full_name'] ?? 'Chưa cập nhật')) ?></div>
+                                        <div class="text-muted small"><?= h(($user['email'] ?? '')) ?></div>
                                     </div>
                                 </div>
                             </td>
                             <td>
                                 <?php if ($isStaff): ?>
-                                    <span class="admin-chip"><?= h($user['position'] ?: 'Nhân viên') ?></span>
+                                    <span class="admin-chip"><?= h(($user['position'] ?? '') ?: 'Nhân viên') ?></span>
                                 <?php else: ?>
-                                    <div><?= h($user['phone'] ?: 'Chưa cập nhật') ?></div>
-                                    <div class="text-muted small"><?= h($user['address'] ?: 'Chưa cập nhật địa chỉ') ?></div>
+                                    <div><?= h(($user['phone'] ?? '') ?: 'Chưa cập nhật') ?></div>
+                                    <div class="text-muted small"><?= h(($user['address'] ?? '') ?: 'Chưa cập nhật địa chỉ') ?></div>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php if ($isStaff): ?>
-                                    <div><?= h($user['branch_name'] ?: 'Chưa phân công') ?></div>
+                                    <div><?= h(($user['branch_name'] ?? '') ?: 'Chưa phân công') ?></div>
                                     <div class="text-muted small">Vào làm: <?= h(format_date($user['hire_date'] ?? null)) ?></div>
                                 <?php else: ?>
                                     <?= h(format_date($user['birthday'] ?? null)) ?>
                                 <?php endif; ?>
                             </td>
-                            <td><?= user_status_badge((string) $user['status'], $isStaff) ?></td>
+                            <td><?= user_status_badge((string) ($user['status'] ?? ''), $isStaff) ?></td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a class="admin-btn admin-btn--ghost admin-btn--icon" href="?action=toggle_status_user&id=<?= (int) $user['user_id'] ?>&role=<?= h($user['role']) ?>" title="Đổi trạng thái">
+                                    <a class="admin-btn admin-btn--ghost admin-btn--icon" href="<?= h(admin_url('admin_toggle_status_user', ['id' => (int) ($user['user_id'] ?? 0), 'role' => $user['role'] ?? ($isStaff ? 'staff' : 'customer')])) ?>" title="Đổi trạng thái">
                                         <i class="fa-solid fa-power-off"></i>
                                     </a>
-                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="?action=<?= $isStaff ? 'edit_employee' : 'edit_customer' ?>&id=<?= (int) $user['user_id'] ?>" title="Chỉnh sửa">
+                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url($isStaff ? 'admin_edit_employee' : 'admin_edit_customer', ['id' => (int) ($user['user_id'] ?? 0)])) ?>" title="Chỉnh sửa">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
-                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= (int) $user['user_id'] ?>" title="Xóa">
+                                    <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteUserModal<?= (int) ($user['user_id'] ?? 0) ?>" title="Xóa">
                                         <i class="fa-regular fa-trash-can"></i>
                                     </button>
                                 </div>

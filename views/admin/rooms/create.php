@@ -3,7 +3,7 @@
         <h2>THÊM PHÒNG CHIẾU MỚI</h2>
         <p>Tạo phòng chiếu mới và sinh sơ đồ ghế mặc định theo sức chứa.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=rooms">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_rooms')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -11,7 +11,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=store_room" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_store_room')) ?>" class="admin-form-grid">
             <div class="admin-form-grid admin-form-grid--2">
                 <div>
                     <label class="admin-form-label">Tên phòng chiếu</label>
@@ -43,7 +43,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=rooms">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_rooms')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu phòng chiếu</span>

@@ -7,7 +7,7 @@
                 </div>
                 <h4 class="text-center fw-bold mb-3">Xác nhận xóa suất chiếu</h4>
                 <p class="text-center text-muted">Bạn có chắc muốn xóa suất chiếu của phim <strong><?= h($showtime['movie_title']) ?></strong>?</p>
-                <form method="POST" action="?action=delete_showtime" class="d-flex justify-content-center gap-2">
+                <form method="POST" action="<?= h(admin_url('admin_delete_showtime')) ?>" class="d-flex justify-content-center gap-2">
                     <input type="hidden" name="showtime_id" value="<?= (int) $showtime['showtime_id'] ?>">
                     <button class="admin-btn admin-btn--light" type="button" data-bs-dismiss="modal">Hủy</button>
                     <button class="admin-btn admin-btn--danger" type="submit">Xác nhận xóa</button>

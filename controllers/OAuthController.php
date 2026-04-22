@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Customer.php';
 require_once __DIR__ . '/../helpers/OAuthHelper.php';
 
 // Controller xử lý OAuth login (Google)
@@ -22,7 +22,7 @@ class OAuthController {
         $code = $_GET['code'] ?? null;
 
         if (!$code) {
-            header("Location: index.php?action=login&error=Google login failed");
+            header("Location: " . customer_url('login', ['error' => 'Google login failed']));
             exit;
         }
 
@@ -35,24 +35,22 @@ class OAuthController {
             
             if ($user) {
                 // Lưu session
-                $_SESSION['user_id'] = $user['user_id'];
+                $_SESSION['customer_id'] = (int) $user['customer_id'];
                 $_SESSION['full_name'] = $user['full_name'];
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['phone'] = $user['phone'] ?? '';
-                $_SESSION['role'] = $user['role'];
+                $_SESSION['role'] = 'customer';
+                $_SESSION['avatar'] = $user['avatar'] ?? 'assets/images/default-avatar.svg';
+                $_SESSION['auth_scope'] = 'customer';
                 
-                if (in_array($_SESSION['role'] ?? '', ['admin', 'staff'], true)) {
-                    header("Location: index.php?action=admin_dashboard");
-                } else {
-                    header("Location: index.php");
-                }
+                header("Location: " . customer_url('home'));
                 exit;
             } else {
-                header("Location: index.php?action=login&error=Failed to create user account");
+                header("Location: " . customer_url('login', ['error' => 'Failed to create user account']));
                 exit;
             }
         } catch (Exception $e) {
-            header("Location: index.php?action=login&error=" . urlencode($e->getMessage()));
+            header("Location: " . customer_url('login', ['error' => $e->getMessage()]));
             exit;
         }
     }
@@ -61,7 +59,7 @@ class OAuthController {
 
     // Tìm hoặc tạo user từ OAuth data
     private function findOrCreateOAuthUser($provider, $userInfo) {
-        $userModel = new User();
+        $userModel = new Customer();
         
         // Tìm user theo oauth_id
         $existingUser = $userModel->findByOAuth($provider, $userInfo['id']);
@@ -75,24 +73,24 @@ class OAuthController {
             $userByEmail = $userModel->findByEmail($userInfo['email']);
             if ($userByEmail) {
                 // Cập nhật oauth info cho user hiện tại
-                $userModel->linkOAuthAccount($userByEmail['user_id'], $provider, $userInfo['id']);
+                $userModel->linkOAuthAccount((int) $userByEmail['customer_id'], $provider, $userInfo['id']);
                 return $userByEmail;
             }
         }
 
         // Tạo user mới
-        $userModel->full_name = $userInfo['name'] ?? 'User';
-        $userModel->email = $userInfo['email'] ?? '';
-        $userModel->phone = '';
-        $userModel->birthday = '';
-        $userModel->address = '';
-        $userModel->password = bin2hex(random_bytes(16)); // Random password
-        $userModel->role = 'customer';
-        $userModel->status = 'active';
-        
-        if ($userModel->registerOAuth($provider, $userInfo['id'])) {
-            // Lấy user vừa tạo
-            return $userModel->findByEmail($userModel->email);
+        $data = [
+            'full_name' => $userInfo['name'] ?? 'User',
+            'email' => $userInfo['email'] ?? '',
+            'phone' => '',
+            'birthday' => '',
+            'address' => '',
+            'password' => bin2hex(random_bytes(16)),
+            'avatar' => $userInfo['picture'] ?? 'assets/images/default-avatar.svg',
+        ];
+
+        if ($userModel->registerOAuth($data, $provider, $userInfo['id'])) {
+            return $userModel->findByEmail($data['email']);
         }
 
         return null;

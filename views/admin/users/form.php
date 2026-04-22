@@ -3,7 +3,7 @@
 </div>
 
 <div class="admin-card admin-form-card"><div class="admin-card__body">
-    <form action="index.php?action=<?= isset($user) ? 'update_user' : 'store_user' ?>" method="POST">
+    <form action="<?= h(admin_url(isset($user) ? 'admin_update_user' : 'admin_store_user')) ?>" method="POST">
         
         <?php if(isset($user)): ?>
             <input type="hidden" name="id" value="<?= $user['id'] ?>">

@@ -10,11 +10,27 @@ class Showtime {
         $this->conn = $database->getConnection();
     }
 
+    private function normalizeRow(array $row): array {
+        $row['showtime_id'] = (int) ($row['showtime_id'] ?? 0);
+        $row['movie_id'] = (int) ($row['movie_id'] ?? 0);
+        $row['room_id'] = (int) ($row['room_id'] ?? 0);
+        $row['movie_title'] = (string) ($row['movie_title'] ?? $row['title'] ?? 'Chưa cập nhật');
+        $row['title'] = (string) ($row['title'] ?? $row['movie_title'] ?? 'Chưa cập nhật');
+        $row['room_name'] = (string) ($row['room_name'] ?? $row['name'] ?? 'Chưa cập nhật');
+        $row['name'] = (string) ($row['name'] ?? $row['room_name'] ?? 'Chưa cập nhật');
+        $row['movie_poster'] = (string) ($row['movie_poster'] ?? $row['poster'] ?? $row['poster_url'] ?? '');
+        $row['price'] = (float) ($row['price'] ?? $row['base_price'] ?? 0);
+        $row['base_price'] = (float) ($row['base_price'] ?? $row['price'] ?? 0);
+        $row['status'] = (int) ($row['status'] ?? 1);
+        $row['sold_tickets'] = (int) ($row['sold_tickets'] ?? 0);
+        return $row;
+    }
+
     public function getAll(array $filters = []): array {
         $sql = "SELECT s.*,
                     m.title AS movie_title,
-                    m.poster AS movie_poster,
-                    r.name AS room_name,
+                    COALESCE(m.poster, m.poster_url) AS movie_poster,
+                    COALESCE(NULLIF(r.room_name, ''), r.name) AS room_name,
                     (SELECT COUNT(*) FROM tickets t WHERE t.showtime_id = s.showtime_id AND t.ticket_status <> 'cancelled') AS sold_tickets
                 FROM {$this->table} s
                 INNER JOIN movies m ON m.movie_id = s.movie_id
@@ -23,7 +39,7 @@ class Showtime {
         $params = [];
 
         if (!empty($filters['keyword'])) {
-            $sql .= " AND (m.title LIKE :keyword OR r.name LIKE :keyword)";
+            $sql .= " AND (m.title LIKE :keyword OR COALESCE(NULLIF(r.room_name, ''), r.name) LIKE :keyword)";
             $params[':keyword'] = '%' . trim($filters['keyword']) . '%';
         }
 
@@ -40,27 +56,30 @@ class Showtime {
         $sql .= " ORDER BY s.show_date DESC, s.start_time DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        return array_map(fn(array $row) => $this->normalizeRow($row), $stmt->fetchAll());
     }
 
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE showtime_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
+        $row = $stmt->fetch();
+        return $row ? $this->normalizeRow($row) : null;
     }
 
     public function create(array $data): bool {
         $sql = "INSERT INTO {$this->table}
-                (movie_id, room_id, show_date, start_time, end_time, price, status)
-                VALUES (:movie_id, :room_id, :show_date, :start_time, :end_time, :price, :status)";
+                (movie_id, room_id, show_date, start_time, end_time, price, base_price, status)
+                VALUES (:movie_id, :room_id, :show_date, :start_time, :end_time, :price, :base_price, :status)";
         $stmt = $this->conn->prepare($sql);
+        $price = (float) $data['price'];
         return $stmt->execute([
             ':movie_id' => (int) $data['movie_id'],
             ':room_id' => (int) $data['room_id'],
             ':show_date' => $data['show_date'],
             ':start_time' => $data['start_time'],
             ':end_time' => $data['end_time'],
-            ':price' => (int) $data['price'],
+            ':price' => $price,
+            ':base_price' => $price,
             ':status' => (int) $data['status'],
         ]);
     }
@@ -73,22 +92,38 @@ class Showtime {
                     start_time = :start_time,
                     end_time = :end_time,
                     price = :price,
+                    base_price = :base_price,
                     status = :status
                 WHERE showtime_id = :showtime_id";
         $stmt = $this->conn->prepare($sql);
+        $price = (float) $data['price'];
         return $stmt->execute([
             ':movie_id' => (int) $data['movie_id'],
             ':room_id' => (int) $data['room_id'],
             ':show_date' => $data['show_date'],
             ':start_time' => $data['start_time'],
             ':end_time' => $data['end_time'],
-            ':price' => (int) $data['price'],
+            ':price' => $price,
+            ':base_price' => $price,
             ':status' => (int) $data['status'],
             ':showtime_id' => $id,
         ]);
     }
 
+    public function countTickets(int $showtimeId): int {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM tickets WHERE showtime_id = :id AND ticket_status IN ('reserved', 'paid')");
+        $stmt->execute([':id' => $showtimeId]);
+        return (int) ($stmt->fetchColumn() ?: 0);
+    }
+
+    public function canDelete(int $showtimeId): bool {
+        return $this->countTickets($showtimeId) === 0;
+    }
+
     public function delete(int $id): bool {
+        if (!$this->canDelete($id)) {
+            return false;
+        }
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE showtime_id = :id");
         return $stmt->execute([':id' => $id]);
     }

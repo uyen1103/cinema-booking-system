@@ -27,6 +27,29 @@ class ShowtimeController {
         exit;
     }
 
+    private function validatePayload(array $data, int $ignoreId = 0): ?string {
+        if ($data['movie_id'] <= 0 || !$this->movieModel->getById($data['movie_id'])) {
+            return 'Phim được chọn không tồn tại.';
+        }
+        $room = $this->roomModel->getById($data['room_id']);
+        if ($data['room_id'] <= 0 || !$room) {
+            return 'Phòng chiếu được chọn không tồn tại.';
+        }
+        if ((int)($room['status'] ?? 1) === 0) {
+            return 'Phòng chiếu đang bảo trì và không thể tạo suất chiếu.';
+        }
+        if ($data['price'] <= 0) {
+            return 'Giá vé phải lớn hơn 0.';
+        }
+        if (strtotime($data['show_date'] . ' ' . $data['start_time']) >= strtotime($data['show_date'] . ' ' . $data['end_time'])) {
+            return 'Giờ bắt đầu phải nhỏ hơn giờ kết thúc.';
+        }
+        if ($this->showtimeModel->hasConflict($data['room_id'], $data['show_date'], $data['start_time'], $data['end_time'], $ignoreId ?: null)) {
+            return 'Phòng chiếu đã có suất khác trùng khung giờ.';
+        }
+        return null;
+    }
+
     public function index(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -56,7 +79,7 @@ class ShowtimeController {
 
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=showtimes');
+            $this->redirect(admin_url('admin_showtimes'));
         }
 
         $data = [
@@ -65,18 +88,13 @@ class ShowtimeController {
             'show_date' => $_POST['show_date'] ?? '',
             'start_time' => $_POST['start_time'] ?? '',
             'end_time' => $_POST['end_time'] ?? '',
-            'price' => (int) ($_POST['price'] ?? 0),
+            'price' => (float) ($_POST['price'] ?? 0),
             'status' => (int) ($_POST['status'] ?? 1),
         ];
 
-        if ($data['movie_id'] <= 0 || $data['room_id'] <= 0 || $data['price'] <= 0) {
-            set_flash('danger', 'Vui lòng nhập đủ phim, phòng và giá vé.');
-            $this->redirect('?action=create_showtime');
-        }
-
-        if ($this->showtimeModel->hasConflict($data['room_id'], $data['show_date'], $data['start_time'], $data['end_time'])) {
-            set_flash('danger', 'Phòng chiếu đã có suất khác trùng khung giờ.');
-            $this->redirect('?action=create_showtime');
+        if ($error = $this->validatePayload($data)) {
+            set_flash('danger', $error);
+            $this->redirect(admin_url('admin_create_showtime'));
         }
 
         if ($this->showtimeModel->create($data)) {
@@ -85,14 +103,14 @@ class ShowtimeController {
             set_flash('danger', 'Không thể thêm suất chiếu.');
         }
 
-        $this->redirect('?action=showtimes');
+        $this->redirect(admin_url('admin_showtimes'));
     }
 
     public function edit(int $id): void {
         $showtime = $this->showtimeModel->getById($id);
         if (!$showtime) {
             set_flash('danger', 'Không tìm thấy suất chiếu.');
-            $this->redirect('?action=showtimes');
+            $this->redirect(admin_url('admin_showtimes'));
         }
 
         $this->renderAdmin('edit', [
@@ -107,14 +125,14 @@ class ShowtimeController {
 
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=showtimes');
+            $this->redirect(admin_url('admin_showtimes'));
         }
 
         $id = (int) ($_POST['showtime_id'] ?? 0);
         $showtime = $this->showtimeModel->getById($id);
         if (!$showtime) {
             set_flash('danger', 'Suất chiếu không tồn tại.');
-            $this->redirect('?action=showtimes');
+            $this->redirect(admin_url('admin_showtimes'));
         }
 
         $data = [
@@ -123,13 +141,13 @@ class ShowtimeController {
             'show_date' => $_POST['show_date'] ?? '',
             'start_time' => $_POST['start_time'] ?? '',
             'end_time' => $_POST['end_time'] ?? '',
-            'price' => (int) ($_POST['price'] ?? 0),
+            'price' => (float) ($_POST['price'] ?? 0),
             'status' => (int) ($_POST['status'] ?? 1),
         ];
 
-        if ($this->showtimeModel->hasConflict($data['room_id'], $data['show_date'], $data['start_time'], $data['end_time'], $id)) {
-            set_flash('danger', 'Phòng chiếu đã có suất khác trùng khung giờ.');
-            $this->redirect('?action=edit_showtime&id=' . $id);
+        if ($error = $this->validatePayload($data, $id)) {
+            set_flash('danger', $error);
+            $this->redirect(admin_url('admin_edit_showtime', ['id' => $id]));
         }
 
         if ($this->showtimeModel->update($id, $data)) {
@@ -138,22 +156,24 @@ class ShowtimeController {
             set_flash('danger', 'Không thể cập nhật suất chiếu.');
         }
 
-        $this->redirect('?action=showtimes');
+        $this->redirect(admin_url('admin_showtimes'));
     }
 
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=showtimes');
+            $this->redirect(admin_url('admin_showtimes'));
         }
 
         $id = (int) ($_POST['showtime_id'] ?? 0);
 
-        if ($this->showtimeModel->delete($id)) {
+        if (!$this->showtimeModel->canDelete($id)) {
+            set_flash('danger', 'Không thể xóa suất chiếu đã phát sinh vé đặt.');
+        } elseif ($this->showtimeModel->delete($id)) {
             set_flash('success', 'Đã xóa suất chiếu.');
         } else {
             set_flash('danger', 'Không thể xóa suất chiếu.');
         }
 
-        $this->redirect('?action=showtimes');
+        $this->redirect(admin_url('admin_showtimes'));
     }
 }

@@ -3,7 +3,7 @@
         <h2>CHỈNH SỬA PHÒNG: <?= h($room['name']) ?></h2>
         <p>Cập nhật thông số hoạt động và trạng thái của phòng chiếu.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=rooms">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_rooms')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -11,7 +11,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=update_room" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_update_room')) ?>" class="admin-form-grid">
             <input type="hidden" name="room_id" value="<?= (int) $room['room_id'] ?>">
 
             <div class="admin-form-grid admin-form-grid--2">
@@ -45,7 +45,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--ghost" href="?action=room_seats&id=<?= (int) $room['room_id'] ?>">
+                <a class="admin-btn admin-btn--ghost" href="<?= h(admin_url('admin_room_seats', ['id' => (int) $room['room_id']])) ?>">
                     <i class="fa-solid fa-couch"></i>
                     <span>Xem sơ đồ ghế</span>
                 </a>

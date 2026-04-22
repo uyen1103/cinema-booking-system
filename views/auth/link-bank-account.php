@@ -13,12 +13,12 @@
                 </div>
                 <div class="user-meta">
                     <h3 class="user-name-sidebar"><?= htmlspecialchars($user['full_name'] ?? 'Người dùng') ?></h3>
-                    <span class="badge-membership">Thành viên bạc</span>
+                    <?php if (!isAdmin()): ?><span class="badge-membership">Thành viên bạc</span><?php else: ?><span class="badge-membership">Nhân sự hệ thống</span><?php endif; ?>
                 </div>
             </div>
 
             <nav class="sidebar-nav">
-                <a href="<?= h(app_url('profile')) ?>" class="profile-sidebar-item">
+                <a href="<?= h(account_profile_url()) ?>" class="profile-sidebar-item">
                     <i class="ri-user-smile-line"></i><span>Thông tin cá nhân</span>
                 </a>
                 <?php if (!isAdmin()): ?>
@@ -29,7 +29,7 @@
                     <i class="ri-coupon-2-line"></i><span>Voucher của tôi</span>
                 </a>
                 <?php endif; ?>
-                <a href="<?= h(app_url('change-password')) ?>" class="profile-sidebar-item">
+                <a href="<?= h(account_change_password_url()) ?>" class="profile-sidebar-item">
                     <i class="ri-lock-password-line"></i><span>Đổi mật khẩu</span>
                 </a>
                 <?php if (!isAdmin()): ?>
@@ -43,7 +43,7 @@
                 </a>
                 <?php endif; ?>
                 <div class="nav-divider"></div>
-                <a href="<?= h(app_url('logout')) ?>" class="profile-sidebar-item">
+                <a href="<?= h(account_logout_url()) ?>" class="profile-sidebar-item">
                     <i class="ri-logout-box-r-line"></i><span>Đăng xuất</span>
                 </a>
             </nav>
@@ -86,7 +86,7 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">Lưu thay đổi</button>
-                    <a href="<?= h(app_url('profile')) ?>" class="btn-secondary btn-back">
+                    <a href="<?= h(account_profile_url()) ?>" class="btn-secondary btn-back">
                         <i class="ri-arrow-go-back-line"></i><span>Quay lại</span>
                     </a>
                 </div>

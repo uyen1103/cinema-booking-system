@@ -84,14 +84,14 @@ class MovieController {
         $allRooms = $this->movieModel->getAllRooms();
         $theaters = [];
         foreach ($allRooms as $room) {
-            $roomName = trim($room['room_name']);
+            $roomName = trim($room['name'] ?? '') ?: trim($room['room_name'] ?? '');
             $cinema = 'Rạp khác';
             $hall = $roomName;
             if (strpos($roomName, ' - ') !== false) {
                 [$cinema, $hall] = explode(' - ', $roomName, 2);
             }
-            $cinema = trim($cinema);
-            $hall = trim($hall);
+            $cinema = trim($cinema ?? '');
+            $hall = trim($hall ?? '');
             if (!isset($theaters[$cinema])) {
                 $theaters[$cinema] = [];
             }
@@ -105,7 +105,7 @@ class MovieController {
         $movie_id = (int) ($_GET['id'] ?? 0);
         $movie = $this->movieModel->getMovieById($movie_id);
         if (!$movie) {
-            header('Location: index.php');
+            header('Location: ' . customer_url('home'));
             exit;
         }
         $showtimes = $this->movieModel->getShowtimesByMovie($movie_id);
@@ -116,7 +116,7 @@ class MovieController {
         $movie_id = (int) ($_GET['id'] ?? 0);
         $movie = $this->movieModel->getMovieById($movie_id);
         if (!$movie) {
-            header('Location: index.php');
+            header('Location: ' . customer_url('home'));
             exit;
         }
         $showtimes = $this->movieModel->getShowtimesByMovie($movie_id);
@@ -124,15 +124,15 @@ class MovieController {
     }
 
     public function book(): void {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: web.php?action=login');
+        if (!isCustomerLoggedIn()) {
+            header('Location: ' . customer_url('login'));
             exit;
         }
 
         $showtime_id = (int) ($_GET['showtime_id'] ?? 0);
         $showtime = $this->movieModel->getShowtimeById($showtime_id);
         if (!$showtime) {
-            header('Location: index.php');
+            header('Location: ' . customer_url('home'));
             exit;
         }
 
@@ -142,7 +142,7 @@ class MovieController {
         $errors = [];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $selectedSeats = array_map('intval', $_POST['seats'] ?? []);
+            $selectedSeats = array_values(array_unique(array_map('intval', $_POST['seats'] ?? [])));
             $promoCode = trim($_POST['promo_code'] ?? '');
             if (empty($selectedSeats)) {
                 $errors[] = 'Vui lòng chọn ít nhất một ghế.';
@@ -155,15 +155,29 @@ class MovieController {
             $seatPrices = [];
 
             if (empty($errors)) {
+                // Làm mới sơ đồ ghế tại thời điểm submit để tránh đặt trùng từ tab khác/khách khác.
+                $seatMap = $this->movieModel->getSeatsForShowtime($showtime_id);
+                $seatLookup = [];
                 foreach ($seatMap as $seat) {
-                    if (in_array((int) $seat['seat_id'], $selectedSeats, true)) {
-                        $seatType = $seat['seat_type'] ?? 'standard';
-                        $seatPriceInfo = $this->seatPriceModel->getByType($seatType);
-                        $multiplier = $seatPriceInfo ? (float) $seatPriceInfo['price_multiplier'] : 1.00;
-                        $seatPrice = (float) $showtime['base_price'] * $multiplier;
-                        $totalAmount += $seatPrice;
-                        $seatPrices[$seat['seat_id']] = $seatPrice;
+                    $seatLookup[(int) $seat['seat_id']] = $seat;
+                }
+
+                foreach ($selectedSeats as $seatId) {
+                    if (!isset($seatLookup[$seatId])) {
+                        $errors[] = 'Ghế đã chọn không tồn tại trong suất chiếu này.';
+                        continue;
                     }
+                    if ((int) ($seatLookup[$seatId]['reserved'] ?? 0) === 1) {
+                        $errors[] = 'Một hoặc nhiều ghế bạn chọn đã được người khác đặt trước. Vui lòng chọn lại.';
+                        continue;
+                    }
+
+                    $seatType = $seatLookup[$seatId]['seat_type'] ?? 'standard';
+                    $seatPriceInfo = $this->seatPriceModel->getByType($seatType);
+                    $multiplier = $seatPriceInfo ? (float) $seatPriceInfo['price_multiplier'] : 1.00;
+                    $seatPrice = (float) $showtime['base_price'] * $multiplier;
+                    $totalAmount += $seatPrice;
+                    $seatPrices[$seatId] = $seatPrice;
                 }
             }
 
@@ -173,27 +187,43 @@ class MovieController {
                 if (!$offer) {
                     $errors[] = 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.';
                 } else {
-                    $promotion_id = $offer['promotion_id'];
-                    if (($offer['discount_type'] ?? '') === 'percent') {
-                        $discountAmount = round($totalAmount * ((float) $offer['discount_value'] / 100), 2);
-                        if (!empty($offer['max_discount'])) {
-                            $discountAmount = min($discountAmount, (float) $offer['max_discount']);
+                    $ticketsForValidation = [];
+                    foreach ($selectedSeats as $seatId) {
+                        if (!isset($seatLookup[$seatId])) {
+                            continue;
                         }
-                    } else {
-                        $discountAmount = min((float) $offer['discount_value'], $totalAmount);
+                        $ticketsForValidation[] = [
+                            'seat_type' => $seatLookup[$seatId]['seat_type'] ?? 'standard',
+                            'price' => (float) ($seatPrices[$seatId] ?? 0),
+                        ];
                     }
-                    $finalAmount = max(0, $totalAmount - $discountAmount);
+                    $validation = $this->validatePromotionForOrder($offer, ['total_amount' => $totalAmount], $ticketsForValidation);
+                    if (!($validation['valid'] ?? false)) {
+                        $errors[] = $validation['message'] ?? 'Mã khuyến mãi không áp dụng cho đơn này.';
+                    } else {
+                        $promotion_id = $offer['promotion_id'];
+                        if (($offer['discount_type'] ?? '') === 'percent') {
+                            $discountAmount = round($totalAmount * ((float) $offer['discount_value'] / 100), 2);
+                            if (!empty($offer['max_discount'])) {
+                                $discountAmount = min($discountAmount, (float) $offer['max_discount']);
+                            }
+                        } else {
+                            $discountAmount = min((float) $offer['discount_value'], $totalAmount);
+                        }
+                        $finalAmount = max(0, $totalAmount - $discountAmount);
+                    }
                 }
             }
 
             if (empty($errors)) {
-                $orderCode = 'ORD' . time() . rand(100, 999);
-                $order_id = $this->orderModel->create((int) $_SESSION['user_id'], $promotion_id, $orderCode, $totalAmount, $discountAmount, $finalAmount);
+                $orderCode = 'ORD' . date('YmdHis') . rand(100, 999);
+                $order_id = $this->orderModel->create(currentCustomerId(), $promotion_id, $orderCode, $totalAmount, $discountAmount, $finalAmount);
                 if ($order_id) {
                     if ($this->ticketModel->reserveTicketsWithPrice($order_id, $showtime_id, $seatPrices)) {
-                        header('Location: web.php?action=checkout&order_id=' . $order_id);
+                        header('Location: ' . customer_url('checkout', ['order_id' => $order_id]));
                         exit;
                     }
+                    $this->orderModel->deleteIfNoTickets($order_id);
                     $errors[] = 'Không thể tạo vé. Vui lòng thử lại.';
                 } else {
                     $errors[] = 'Không thể tạo đơn đặt vé. Vui lòng thử lại.';
@@ -205,8 +235,8 @@ class MovieController {
     }
 
     public function checkout(): void {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: web.php?action=login');
+        if (!isCustomerLoggedIn()) {
+            header('Location: ' . customer_url('login'));
             exit;
         }
 
@@ -217,8 +247,13 @@ class MovieController {
         $promoCode = $order['promo_code'] ?? '';
         $activePromotions = $this->promotionModel->getActivePromotions();
 
-        if (!$order || (int) $order['user_id'] !== (int) $_SESSION['user_id']) {
-            header('Location: web.php?action=booking-history');
+        if (!$order || (int) ($order['customer_id'] ?? 0) !== currentCustomerId()) {
+            header('Location: ' . customer_url('history'));
+            exit;
+        }
+        if (($order['order_status'] ?? '') === 'cancelled') {
+            set_flash('warning', 'Đơn vé đã bị hủy nên không thể tiếp tục thanh toán.');
+            header('Location: ' . customer_url('history'));
             exit;
         }
 
@@ -243,7 +278,7 @@ class MovieController {
                             $errors[] = $validation['reason'];
                         } else {
                             $discountAmount = 0.00;
-                            $totalAmount = $order['total_amount'];
+                            $totalAmount = (float) $order['total_amount'];
                             if (($offer['discount_type'] ?? '') === 'percent') {
                                 $discountAmount = round($totalAmount * ((float) $offer['discount_value'] / 100), 2);
                                 if (!empty($offer['max_discount'])) {
@@ -253,7 +288,7 @@ class MovieController {
                                 $discountAmount = min((float) $offer['discount_value'], $totalAmount);
                             }
                             $finalAmount = max(0, $totalAmount - $discountAmount);
-                            if ($this->orderModel->updatePromotion($order_id, $offer['promotion_id'], $discountAmount, $finalAmount)) {
+                            if ($this->orderModel->updatePromotion($order_id, (int) $offer['promotion_id'], $discountAmount, $finalAmount)) {
                                 $success = 'Áp dụng mã giảm giá thành công.';
                                 $order = $this->orderModel->getById($order_id);
                             } else {
@@ -265,11 +300,29 @@ class MovieController {
             }
 
             if (isset($_POST['confirm_payment'])) {
-                if ($this->orderModel->updateStatus($order_id, 'paid')) {
-                    header('Location: web.php?action=booking-success&order_id=' . $order_id);
-                    exit;
+                if (empty($_POST['terms_agree'])) {
+                    $errors[] = 'Vui lòng đồng ý với điều khoản trước khi thanh toán.';
                 }
-                $errors[] = 'Không thể cập nhật đơn hàng. Vui lòng thử lại.';
+
+                $paymentMethod = trim($_POST['payment_method'] ?? 'wallet');
+                if (!in_array($paymentMethod, ['card', 'wallet', 'qr', 'cash'], true)) {
+                    $errors[] = 'Phương thức thanh toán không hợp lệ.';
+                }
+
+                if (empty($errors)) {
+                    // Khách hàng đã thanh toán, nhưng đơn vẫn ở trạng thái chờ để admin theo dõi/duyệt vé.
+                    $updated = $this->orderModel->updateStatus($order_id, [
+                        'order_status' => 'pending',
+                        'payment_status' => 'paid',
+                        'payment_method' => $paymentMethod,
+                        'notes' => trim(($order['notes'] ?? '') . ' | Khách hàng đã xác nhận thanh toán'),
+                    ]);
+                    if ($updated) {
+                        header('Location: ' . customer_url('booking-success', ['order_id' => $order_id]));
+                        exit;
+                    }
+                    $errors[] = 'Không thể cập nhật đơn hàng. Vui lòng thử lại.';
+                }
             }
         }
 
@@ -277,14 +330,18 @@ class MovieController {
     }
 
     public function success(): void {
-        if (!isset($_SESSION['user_id'])) {
-            header('Location: web.php?action=login');
+        if (!isCustomerLoggedIn()) {
+            header('Location: ' . customer_url('login'));
             exit;
         }
         $order_id = (int) ($_GET['order_id'] ?? 0);
         $order = $this->orderModel->getById($order_id);
-        if (!$order || (int) $order['user_id'] !== (int) $_SESSION['user_id']) {
-            header('Location: web.php?action=history');
+        if (!$order || (int) ($order['customer_id'] ?? 0) !== currentCustomerId()) {
+            header('Location: ' . customer_url('history'));
+            exit;
+        }
+        if (!in_array(($order['payment_status'] ?? ''), ['paid', 'success'], true)) {
+            header('Location: ' . customer_url('checkout', ['order_id' => $order_id]));
             exit;
         }
         $tickets = $this->ticketModel->getTicketsByOrder($order_id);
@@ -295,14 +352,14 @@ class MovieController {
         $allRooms = $this->movieModel->getAllRooms();
         $theaters = [];
         foreach ($allRooms as $room) {
-            $roomName = trim($room['room_name']);
+            $roomName = trim($room['name'] ?? '') ?: trim($room['room_name'] ?? '');
             $cinema = 'Rạp khác';
             $hall = $roomName;
             if (strpos($roomName, ' - ') !== false) {
                 [$cinema, $hall] = explode(' - ', $roomName, 2);
             }
-            $cinema = trim($cinema);
-            $hall = trim($hall);
+            $cinema = trim($cinema ?? '');
+            $hall = trim($hall ?? '');
             if (!isset($theaters[$cinema])) {
                 $theaters[$cinema] = ['name' => $cinema, 'address' => '', 'halls' => []];
             }
@@ -344,7 +401,7 @@ class MovieController {
 
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         $data = [
             'title' => trim($_POST['title'] ?? ''),
@@ -361,21 +418,25 @@ class MovieController {
         ];
         if ($data['title'] === '' || $data['duration'] <= 0 || empty($data['release_date'])) {
             set_flash('danger', 'Dữ liệu phim chưa hợp lệ.');
-            $this->redirect('?action=create_movie');
+            $this->redirect(admin_url('admin_create_movie'));
+        }
+        if ($this->movieModel->titleExists($data['title'])) {
+            set_flash('danger', 'Tên phim đã tồn tại trong hệ thống.');
+            $this->redirect(admin_url('admin_create_movie'));
         }
         if ($this->movieModel->create($data)) {
             set_flash('success', 'Thêm phim thành công.');
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         set_flash('danger', 'Không thể thêm phim.');
-        $this->redirect('?action=create_movie');
+        $this->redirect(admin_url('admin_create_movie'));
     }
 
     public function edit(int $id): void {
         $movie = $this->movieModel->getById($id);
         if (!$movie) {
             set_flash('danger', 'Không tìm thấy phim cần chỉnh sửa.');
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         $this->renderAdmin('edit', [
             'movie' => $movie,
@@ -388,13 +449,13 @@ class MovieController {
 
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         $id = (int) ($_POST['movie_id'] ?? 0);
         $existing = $this->movieModel->getById($id);
         if (!$existing) {
             set_flash('danger', 'Phim không tồn tại.');
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         $data = [
             'title' => trim($_POST['title'] ?? ''),
@@ -407,6 +468,14 @@ class MovieController {
             'trailer_url' => trim($_POST['trailer_url'] ?? ''),
             'status' => $_POST['status'] ?? 1,
         ];
+        if ($data['title'] === '' || $data['duration'] <= 0 || empty($data['release_date'])) {
+            set_flash('danger', 'Dữ liệu phim chưa hợp lệ.');
+            $this->redirect(admin_url('admin_edit_movie', ['id' => $id]));
+        }
+        if ($this->movieModel->titleExists($data['title'], $id)) {
+            set_flash('danger', 'Tên phim đã tồn tại trong hệ thống.');
+            $this->redirect(admin_url('admin_edit_movie', ['id' => $id]));
+        }
         $newPoster = $this->uploadImage('poster', 'poster');
         if ($newPoster) $data['poster'] = $newPoster;
         $newBanner = $this->uploadImage('banner', 'banner');
@@ -420,33 +489,35 @@ class MovieController {
                 delete_local_file($existing['banner'], [$this->defaultBanner]);
             }
             set_flash('success', 'Cập nhật phim thành công.');
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
 
         if ($newPoster) delete_local_file($newPoster, []);
         if ($newBanner) delete_local_file($newBanner, []);
         set_flash('danger', 'Không thể cập nhật phim.');
-        $this->redirect('?action=edit_movie&id=' . $id);
+        $this->redirect(admin_url('admin_edit_movie', ['id' => $id]));
     }
 
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
         $id = (int) ($_POST['movie_id'] ?? 0);
         $movie = $this->movieModel->getById($id);
         if (!$movie) {
             set_flash('danger', 'Không tìm thấy phim cần xóa.');
-            $this->redirect('?action=movies');
+            $this->redirect(admin_url('admin_movies'));
         }
-        if ($this->movieModel->delete($id)) {
+        if (!$this->movieModel->canDelete($id)) {
+            set_flash('danger', 'Không thể xóa phim đã phát sinh suất chiếu hoặc vé đặt.');
+        } elseif ($this->movieModel->delete($id)) {
             delete_local_file($movie['poster'] ?? null, [$this->defaultPoster]);
             delete_local_file($movie['banner'] ?? null, [$this->defaultBanner]);
             set_flash('success', 'Xóa phim thành công.');
         } else {
             set_flash('danger', 'Không thể xóa phim.');
         }
-        $this->redirect('?action=movies');
+        $this->redirect(admin_url('admin_movies'));
     }
 }
 ?>

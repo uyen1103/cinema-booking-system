@@ -4,7 +4,7 @@
         <h2><?= $isStaff ? 'THÊM NHÂN VIÊN MỚI' : 'THÊM KHÁCH HÀNG MỚI' ?></h2>
         <p>Hoàn thiện thông tin dưới đây để tạo hồ sơ <?= $isStaff ? 'nhân sự' : 'khách hàng' ?> mới.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=<?= $isStaff ? 'employees' : 'customers' ?>">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url($isStaff ? 'admin_employees' : 'admin_customers')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -12,7 +12,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=store_user" enctype="multipart/form-data" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_store_user')) ?>" enctype="multipart/form-data" class="admin-form-grid">
             <input type="hidden" name="role" value="<?= h($userRole) ?>">
 
             <div class="admin-form-grid admin-form-grid--2">
@@ -107,7 +107,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=<?= $isStaff ? 'employees' : 'customers' ?>">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url($isStaff ? 'admin_employees' : 'admin_customers')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu hồ sơ</span>

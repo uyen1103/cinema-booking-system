@@ -8,7 +8,7 @@
                 <h4 class="text-center fw-bold mb-3">Xác nhận xóa phòng</h4>
                 <p class="text-center text-muted">Bạn chắc chắn muốn xóa <strong><?= h($room['name']) ?></strong>?</p>
                 <div class="alert alert-danger small">Dữ liệu ghế và suất chiếu liên quan có thể bị ảnh hưởng.</div>
-                <form method="POST" action="?action=delete_room" class="d-flex justify-content-center gap-2">
+                <form method="POST" action="<?= h(admin_url('admin_delete_room')) ?>" class="d-flex justify-content-center gap-2">
                     <input type="hidden" name="room_id" value="<?= (int) $room['room_id'] ?>">
                     <button class="admin-btn admin-btn--light" type="button" data-bs-dismiss="modal">Hủy</button>
                     <button class="admin-btn admin-btn--danger" type="submit">Xác nhận xóa</button>

@@ -3,7 +3,7 @@
         <h2>CHỈNH SỬA PHIM: <?= h($movie['title']) ?></h2>
         <p>Cập nhật thông tin chi tiết, poster và trạng thái hiển thị.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=movies">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -11,7 +11,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=update_movie" enctype="multipart/form-data" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_update_movie')) ?>" enctype="multipart/form-data" class="admin-form-grid">
             <input type="hidden" name="movie_id" value="<?= (int) $movie['movie_id'] ?>">
 
             <div class="admin-form-grid admin-form-grid--2">
@@ -93,7 +93,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=movies">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu thay đổi</span>

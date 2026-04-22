@@ -41,15 +41,15 @@ class RoomController {
         $room = $this->roomModel->getById($roomId);
         if (!$room) {
             set_flash('danger', 'Không tìm thấy phòng chiếu.');
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $this->renderAdmin('seats', [
             'room' => $room,
             'seats' => $this->roomModel->getSeatsByRoomId($roomId),
             'activeMenu' => 'rooms',
-            'breadcrumb' => 'Sơ đồ ghế ' . $room['name'],
-            'pageTitle' => 'Sơ đồ ghế ' . $room['name']
+            'breadcrumb' => 'Sơ đồ ghế ' . ($room['name'] ?? ''),
+            'pageTitle' => 'Sơ đồ ghế ' . ($room['name'] ?? '')
         ]);
     }
 
@@ -63,7 +63,7 @@ class RoomController {
 
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $data = [
@@ -77,7 +77,15 @@ class RoomController {
 
         if ($data['name'] === '' || $data['capacity'] <= 0) {
             set_flash('danger', 'Vui lòng nhập tên phòng và sức chứa hợp lệ.');
-            $this->redirect('?action=create_room');
+            $this->redirect(admin_url('admin_create_room'));
+        }
+        if ($this->roomModel->roomNameExists($data['name'])) {
+            set_flash('danger', 'Tên phòng chiếu đã tồn tại trong hệ thống.');
+            $this->redirect(admin_url('admin_create_room'));
+        }
+        if (strtotime($data['opening_time']) >= strtotime($data['closing_time'])) {
+            set_flash('danger', 'Giờ mở cửa phải nhỏ hơn giờ đóng cửa.');
+            $this->redirect(admin_url('admin_create_room'));
         }
 
         if ($this->roomModel->create($data)) {
@@ -86,14 +94,14 @@ class RoomController {
             set_flash('danger', 'Không thể tạo phòng chiếu.');
         }
 
-        $this->redirect('?action=rooms');
+        $this->redirect(admin_url('admin_rooms'));
     }
 
     public function edit(int $id): void {
         $room = $this->roomModel->getById($id);
         if (!$room) {
             set_flash('danger', 'Không tìm thấy phòng chiếu.');
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $this->renderAdmin('edit', [
@@ -106,14 +114,14 @@ class RoomController {
 
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $id = (int) ($_POST['room_id'] ?? 0);
         $room = $this->roomModel->getById($id);
         if (!$room) {
             set_flash('danger', 'Không tìm thấy phòng chiếu.');
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $data = [
@@ -125,44 +133,63 @@ class RoomController {
             'maintenance_reason' => trim($_POST['maintenance_reason'] ?? '')
         ];
 
+        if ($data['name'] === '' || $data['capacity'] <= 0) {
+            set_flash('danger', 'Thông tin phòng chiếu không hợp lệ.');
+            $this->redirect(admin_url('admin_edit_room', ['id' => $id]));
+        }
+        if ($this->roomModel->roomNameExists($data['name'], $id)) {
+            set_flash('danger', 'Tên phòng chiếu đã tồn tại trong hệ thống.');
+            $this->redirect(admin_url('admin_edit_room', ['id' => $id]));
+        }
+        if (strtotime((string) $data['opening_time']) >= strtotime((string) $data['closing_time'])) {
+            set_flash('danger', 'Giờ mở cửa phải nhỏ hơn giờ đóng cửa.');
+            $this->redirect(admin_url('admin_edit_room', ['id' => $id]));
+        }
+        if ($data['capacity'] < $this->roomModel->getSeatCount($id)) {
+            set_flash('danger', 'Không thể giảm sức chứa nhỏ hơn số ghế hiện có.');
+            $this->redirect(admin_url('admin_edit_room', ['id' => $id]));
+        }
+
         if ($this->roomModel->update($id, $data)) {
             set_flash('success', 'Đã cập nhật phòng chiếu.');
         } else {
             set_flash('danger', 'Không thể cập nhật phòng chiếu.');
         }
 
-        $this->redirect('?action=rooms');
+        $this->redirect(admin_url('admin_rooms'));
     }
 
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $id = (int) ($_POST['room_id'] ?? 0);
 
-        if ($this->roomModel->delete($id)) {
+        if (!$this->roomModel->canDelete($id)) {
+            set_flash('danger', 'Không thể xóa phòng chiếu đã phát sinh suất chiếu hoặc vé đặt.');
+        } elseif ($this->roomModel->delete($id)) {
             set_flash('success', 'Đã xóa phòng chiếu.');
         } else {
             set_flash('danger', 'Không thể xóa phòng chiếu.');
         }
 
-        $this->redirect('?action=rooms');
+        $this->redirect(admin_url('admin_rooms'));
     }
 
     public function generateSeats(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $this->redirect('?action=rooms');
+            $this->redirect(admin_url('admin_rooms'));
         }
 
         $roomId = (int) ($_POST['room_id'] ?? 0);
         if ($this->roomModel->generateStandardSeats($roomId)) {
             set_flash('success', 'Đã sinh sơ đồ ghế mặc định.');
-            $this->redirect('?action=room_seats&id=' . $roomId);
+            $this->redirect(admin_url('admin_room_seats', ['id' => $roomId]));
         }
 
         set_flash('danger', 'Không thể sinh sơ đồ ghế.');
-        $this->redirect('?action=rooms');
+        $this->redirect(admin_url('admin_rooms'));
     }
 
     public function toggleSeat(): void {
@@ -172,9 +199,9 @@ class RoomController {
         if ($seatId > 0 && $this->roomModel->toggleSeatStatus($seatId)) {
             set_flash('success', 'Đã cập nhật trạng thái ghế.');
         } else {
-            set_flash('danger', 'Không thể cập nhật trạng thái ghế.');
+            set_flash('danger', 'Không thể cập nhật trạng thái ghế đang gắn với vé đã đặt.');
         }
 
-        $this->redirect('?action=room_seats&id=' . $roomId);
+        $this->redirect(admin_url('admin_room_seats', ['id' => $roomId]));
     }
 }

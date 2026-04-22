@@ -9,10 +9,23 @@ class Customer {
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
+        $this->ensureSchema();
     }
 
     private function normalizeRow(array $row): array {
+        $row['customer_id'] = (int) ($row['customer_id'] ?? $row['user_id'] ?? 0);
         $row['user_id'] = (int) ($row['customer_id'] ?? 0);
+        $row['full_name'] = (string) ($row['full_name'] ?? 'Khách hàng');
+        $row['email'] = (string) ($row['email'] ?? '');
+        $row['phone'] = (string) ($row['phone'] ?? '');
+        $row['birthday'] = $row['birthday'] ?? null;
+        $row['address'] = (string) ($row['address'] ?? '');
+        $row['avatar'] = (string) ($row['avatar'] ?? 'assets/images/default-avatar.svg');
+        $row['bank_account'] = (string) ($row['bank_account'] ?? '');
+        $row['e_wallet_account'] = (string) ($row['e_wallet_account'] ?? '');
+        $row['oauth_provider'] = $row['oauth_provider'] ?? null;
+        $row['oauth_id'] = $row['oauth_id'] ?? null;
+        $row['status'] = $this->normalizeStatus($row['status'] ?? 'active');
         $row['role'] = 'customer';
         $row['account_scope'] = 'customer';
         return $row;
@@ -22,17 +35,193 @@ class Customer {
         return in_array($status, ['active', 'inactive', 'blocked'], true) ? $status : 'active';
     }
 
-    private function legacyTableExists(): bool {
+    private function tableExists(string $table): bool {
         try {
-            $stmt = $this->conn->query("SHOW TABLES LIKE '{$this->legacyTable}'");
+            $stmt = $this->conn->query("SHOW TABLES LIKE '{$table}'");
             return (bool) $stmt->fetchColumn();
         } catch (Throwable $e) {
             return false;
         }
     }
 
+    private function hasColumn(string $table, string $column): bool {
+        try {
+            $stmt = $this->conn->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name");
+            $stmt->execute([':table_name' => $table, ':column_name' => $column]);
+            return (int) $stmt->fetchColumn() > 0;
+        } catch (Throwable $e) {
+            return false;
+        }
+    }
+
+    private function addColumnIfMissing(string $table, string $column, string $definition): void {
+        if (!$this->hasColumn($table, $column)) {
+            $this->conn->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
+        }
+    }
+
+    private function ensureLegacyTable(): void {
+        if (!$this->tableExists($this->legacyTable)) {
+            $this->conn->exec("CREATE TABLE {$this->legacyTable} (
+                user_id INT AUTO_INCREMENT PRIMARY KEY,
+                full_name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                phone VARCHAR(20) NULL,
+                birthday DATE NULL,
+                address VARCHAR(255) NULL,
+                bank_account VARCHAR(100) NULL,
+                e_wallet_account VARCHAR(100) NULL,
+                role VARCHAR(20) NOT NULL DEFAULT 'customer',
+                position VARCHAR(100) NULL,
+                branch_name VARCHAR(150) NULL,
+                hire_date DATE NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'active',
+                avatar VARCHAR(255) NULL,
+                oauth_provider VARCHAR(50) NULL,
+                oauth_id VARCHAR(100) NULL,
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_users_role (role),
+                INDEX idx_users_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        }
+
+        $this->addColumnIfMissing($this->legacyTable, 'phone', 'VARCHAR(20) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'birthday', 'DATE NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'address', 'VARCHAR(255) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'bank_account', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'e_wallet_account', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'position', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'branch_name', 'VARCHAR(150) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'hire_date', 'DATE NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'status', "VARCHAR(20) NOT NULL DEFAULT 'active'");
+        $this->addColumnIfMissing($this->legacyTable, 'avatar', 'VARCHAR(255) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'oauth_provider', 'VARCHAR(50) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'oauth_id', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->legacyTable, 'created_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
+        $this->addColumnIfMissing($this->legacyTable, 'updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
+    }
+
+    private function ensureSchema(): void {
+        if (!$this->tableExists($this->table)) {
+            $this->conn->exec("CREATE TABLE {$this->table} (
+                customer_id INT AUTO_INCREMENT PRIMARY KEY,
+                full_name VARCHAR(100) NOT NULL,
+                email VARCHAR(100) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                phone VARCHAR(20) NULL,
+                birthday DATE NULL,
+                address VARCHAR(255) NULL,
+                avatar VARCHAR(255) NULL,
+                bank_account VARCHAR(100) NULL,
+                e_wallet_account VARCHAR(100) NULL,
+                oauth_provider VARCHAR(50) NULL,
+                oauth_id VARCHAR(100) NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'active',
+                created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_customers_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        }
+
+        $this->addColumnIfMissing($this->table, 'phone', 'VARCHAR(20) NULL');
+        $this->addColumnIfMissing($this->table, 'birthday', 'DATE NULL');
+        $this->addColumnIfMissing($this->table, 'address', 'VARCHAR(255) NULL');
+        $this->addColumnIfMissing($this->table, 'avatar', 'VARCHAR(255) NULL');
+        $this->addColumnIfMissing($this->table, 'bank_account', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->table, 'e_wallet_account', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->table, 'oauth_provider', 'VARCHAR(50) NULL');
+        $this->addColumnIfMissing($this->table, 'oauth_id', 'VARCHAR(100) NULL');
+        $this->addColumnIfMissing($this->table, 'status', "VARCHAR(20) NOT NULL DEFAULT 'active'");
+        $this->addColumnIfMissing($this->table, 'created_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP');
+        $this->addColumnIfMissing($this->table, 'updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
+
+        $this->ensureLegacyTable();
+        $this->bootstrapFromLegacyCustomers();
+    }
+
+    private function bootstrapFromLegacyCustomers(): void {
+        if (!$this->tableExists($this->legacyTable)) {
+            return;
+        }
+
+        try {
+            $this->conn->exec("INSERT INTO {$this->table}
+                (full_name, email, password, phone, birthday, address, avatar, bank_account, e_wallet_account, oauth_provider, oauth_id, status)
+                SELECT u.full_name, u.email, u.password, u.phone, u.birthday, u.address, u.avatar,
+                       u.bank_account, u.e_wallet_account, u.oauth_provider, u.oauth_id,
+                       CASE WHEN u.status IN ('blocked', 'inactive') THEN u.status ELSE 'active' END
+                FROM {$this->legacyTable} u
+                LEFT JOIN {$this->table} c ON c.email = u.email
+                WHERE u.role = 'customer' AND c.customer_id IS NULL");
+        } catch (Throwable $e) {
+        }
+    }
+
+    private function mirrorToLegacyUser(array $customer): void {
+        $this->ensureLegacyTable();
+        $email = trim((string) ($customer['email'] ?? ''));
+        if ($email === '') {
+            return;
+        }
+
+        $stmt = $this->conn->prepare("SELECT user_id FROM {$this->legacyTable} WHERE email = :email AND role = 'customer' LIMIT 1");
+        $stmt->execute([':email' => $email]);
+        $legacyId = $stmt->fetchColumn();
+
+        $params = [
+            ':full_name' => $customer['full_name'] ?? 'Khách hàng',
+            ':email' => $email,
+            ':password' => $customer['password'] ?? '',
+            ':phone' => $customer['phone'] ?: null,
+            ':birthday' => $customer['birthday'] ?: null,
+            ':address' => $customer['address'] ?: null,
+            ':bank_account' => $customer['bank_account'] ?: null,
+            ':e_wallet_account' => $customer['e_wallet_account'] ?: null,
+            ':status' => $this->normalizeStatus($customer['status'] ?? 'active'),
+            ':avatar' => $customer['avatar'] ?: 'assets/images/default-avatar.svg',
+            ':oauth_provider' => $customer['oauth_provider'] ?: null,
+            ':oauth_id' => $customer['oauth_id'] ?: null,
+        ];
+
+        if ($legacyId) {
+            $sql = "UPDATE {$this->legacyTable}
+                    SET full_name = :full_name,
+                        email = :email,
+                        password = :password,
+                        phone = :phone,
+                        birthday = :birthday,
+                        address = :address,
+                        bank_account = :bank_account,
+                        e_wallet_account = :e_wallet_account,
+                        status = :status,
+                        avatar = :avatar,
+                        oauth_provider = :oauth_provider,
+                        oauth_id = :oauth_id,
+                        role = 'customer'
+                    WHERE user_id = :user_id";
+            $params[':user_id'] = $legacyId;
+            $this->conn->prepare($sql)->execute($params);
+            return;
+        }
+
+        $sql = "INSERT INTO {$this->legacyTable}
+                (full_name, email, password, phone, birthday, address, bank_account, e_wallet_account, role, status, avatar, oauth_provider, oauth_id)
+                VALUES (:full_name, :email, :password, :phone, :birthday, :address, :bank_account, :e_wallet_account, 'customer', :status, :avatar, :oauth_provider, :oauth_id)";
+        $this->conn->prepare($sql)->execute($params);
+    }
+
+    private function deleteLegacyUser(string $email): void {
+        if (!$this->tableExists($this->legacyTable) || trim($email) === '') {
+            return;
+        }
+        $stmt = $this->conn->prepare("DELETE FROM {$this->legacyTable} WHERE email = :email AND role = 'customer'");
+        $stmt->execute([':email' => trim($email)]);
+    }
+
     private function findLegacyCustomerByLogin(string $identifier): ?array {
-        if (!$this->legacyTableExists()) {
+        if (!$this->tableExists($this->legacyTable)) {
             return null;
         }
 
@@ -66,7 +255,11 @@ class Customer {
             ':oauth_id' => $legacy['oauth_id'] ?? null,
         ]);
 
-        return $this->findByEmail((string) ($legacy['email'] ?? ''));
+        $customer = $this->findByEmail((string) ($legacy['email'] ?? ''));
+        if ($customer) {
+            $this->mirrorToLegacyUser($customer);
+        }
+        return $customer;
     }
 
     public function validatePassword(string $password): array {
@@ -97,7 +290,7 @@ class Customer {
             (full_name, email, password, phone, birthday, address, bank_account, e_wallet_account, status, avatar)
             VALUES (:full_name, :email, :password, :phone, :birthday, :address, :bank_account, :e_wallet_account, :status, :avatar)");
 
-        return $stmt->execute([
+        $ok = $stmt->execute([
             ':full_name' => $data['full_name'],
             ':email' => $data['email'],
             ':password' => password_hash($data['password'], PASSWORD_DEFAULT),
@@ -109,6 +302,14 @@ class Customer {
             ':status' => $this->normalizeStatus($data['status'] ?? 'active'),
             ':avatar' => $data['avatar'] ?: 'assets/images/default-avatar.svg',
         ]);
+
+        if ($ok) {
+            $customer = $this->findByEmail((string) $data['email']);
+            if ($customer) {
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 
     public function authenticate(string $identifier, string $password): ?array {
@@ -164,6 +365,8 @@ class Customer {
     }
 
     public function getAll(array $filters = []): array {
+        $this->bootstrapFromLegacyCustomers();
+
         $sql = "SELECT customer_id, full_name, email, phone, birthday, address, bank_account, e_wallet_account, status, avatar, created_at
                 FROM {$this->table} WHERE 1=1";
         $params = [];
@@ -184,6 +387,8 @@ class Customer {
     }
 
     public function getStats(): array {
+        $this->bootstrapFromLegacyCustomers();
+
         $stmt = $this->conn->query("SELECT COUNT(*) AS total,
             SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_count,
             SUM(CASE WHEN status IN ('inactive', 'blocked') THEN 1 ELSE 0 END) AS inactive_count
@@ -202,7 +407,7 @@ class Customer {
             (full_name, email, phone, birthday, address, password, bank_account, e_wallet_account, status, avatar)
             VALUES (:full_name, :email, :phone, :birthday, :address, :password, :bank_account, :e_wallet_account, :status, :avatar)");
 
-        return $stmt->execute([
+        $ok = $stmt->execute([
             ':full_name' => $data['full_name'],
             ':email' => $data['email'],
             ':phone' => $data['phone'] ?: null,
@@ -214,6 +419,14 @@ class Customer {
             ':status' => $this->normalizeStatus($data['status'] ?? 'active'),
             ':avatar' => $data['avatar'] ?: 'assets/images/default-avatar.svg',
         ]);
+
+        if ($ok) {
+            $customer = $this->findByEmail((string) $data['email']);
+            if ($customer) {
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 
     public function adminUpdate(int $customerId, array $data): bool {
@@ -241,7 +454,15 @@ class Customer {
         }
 
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE customer_id = :id");
-        return $stmt->execute($params);
+        $ok = $stmt->execute($params);
+        if ($ok) {
+            $customer = $this->getById($customerId);
+            if ($customer) {
+                $customer['password'] = $data['password'] ?? ($existing['password'] ?? '');
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 
     public function countOrders(int $customerId): int {
@@ -264,9 +485,14 @@ class Customer {
         if (!$this->canDelete($customerId)) {
             return false;
         }
+        $existing = $this->getById($customerId);
         try {
             $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE customer_id = :id");
-            return $stmt->execute([':id' => $customerId]);
+            $ok = $stmt->execute([':id' => $customerId]);
+            if ($ok && $existing) {
+                $this->deleteLegacyUser((string) ($existing['email'] ?? ''));
+            }
+            return $ok;
         } catch (Throwable $e) {
             return false;
         }
@@ -292,7 +518,7 @@ class Customer {
                 e_wallet_account = :e_wallet_account
             WHERE customer_id = :id");
 
-        return $stmt->execute([
+        $ok = $stmt->execute([
             ':full_name' => $data['full_name'],
             ':email' => $data['email'],
             ':phone' => $data['phone'] ?: null,
@@ -302,6 +528,14 @@ class Customer {
             ':e_wallet_account' => $data['e_wallet_account'] ?? null,
             ':id' => $customerId,
         ]);
+
+        if ($ok) {
+            $customer = $this->getById($customerId);
+            if ($customer) {
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 
     public function changePassword(int $customerId, string $oldPassword, string $newPassword): bool|array {
@@ -313,11 +547,17 @@ class Customer {
         if ($passwordErrors) {
             return $passwordErrors;
         }
+        $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET password = :password WHERE customer_id = :id");
-        return $stmt->execute([
-            ':password' => password_hash($newPassword, PASSWORD_DEFAULT),
+        $ok = $stmt->execute([
+            ':password' => $hashed,
             ':id' => $customerId,
         ]);
+        if ($ok) {
+            $customer['password'] = $hashed;
+            $this->mirrorToLegacyUser($customer);
+        }
+        return $ok;
     }
 
     public function findByOAuth(string $provider, string $oauthId): ?array {
@@ -335,7 +575,7 @@ class Customer {
             (full_name, email, password, phone, birthday, address, bank_account, e_wallet_account, status, avatar, oauth_provider, oauth_id)
             VALUES (:full_name, :email, :password, :phone, :birthday, :address, :bank_account, :e_wallet_account, :status, :avatar, :oauth_provider, :oauth_id)");
 
-        return $stmt->execute([
+        $ok = $stmt->execute([
             ':full_name' => $data['full_name'],
             ':email' => $data['email'],
             ':password' => password_hash(bin2hex(random_bytes(8)), PASSWORD_DEFAULT),
@@ -349,14 +589,29 @@ class Customer {
             ':oauth_provider' => $provider,
             ':oauth_id' => $oauthId,
         ]);
+
+        if ($ok) {
+            $customer = $this->findByEmail((string) $data['email']);
+            if ($customer) {
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 
     public function linkOAuthAccount(int $customerId, string $provider, string $oauthId): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET oauth_provider = :provider, oauth_id = :oauth_id WHERE customer_id = :id");
-        return $stmt->execute([
+        $ok = $stmt->execute([
             ':provider' => $provider,
             ':oauth_id' => $oauthId,
             ':id' => $customerId,
         ]);
+        if ($ok) {
+            $customer = $this->getById($customerId);
+            if ($customer) {
+                $this->mirrorToLegacyUser($customer);
+            }
+        }
+        return $ok;
     }
 }
