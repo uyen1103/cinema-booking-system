@@ -1,1 +1,13 @@
-Import file database/final_xampp_setup.sql into MySQL on XAMPP.
+HUONG DAN IMPORT DATABASE
+
+1. Tao database movie_booking trong phpMyAdmin.
+2. Import file database/final_xampp_setup.sql de tao cau truc chinh, migrate va du lieu nen toi thieu.
+3. Neu muon test day du tat ca giao dien va chuc nang, import tiep file database/sample_data.sql.
+
+Y NGHIA TUNG FILE
+- final_xampp_setup.sql: schema chinh, bang chinh, bang tuong thich, migrate du lieu cu, du lieu nen toi thieu.
+- sample_data.sql: du lieu mau day du cho customer, employee/admin, movies, rooms, seats, showtimes, promotions, orders, tickets, payments, cancellation requests va reports.
+
+KHUYEN NGHI
+- Moi lan can test sach, nen xoa database movie_booking, tao lai va import lai theo dung thu tu tren.
+- Khong can import cac file SQL nho khac tru khi ban muon sua rieng tung module.

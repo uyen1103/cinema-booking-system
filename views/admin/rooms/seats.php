@@ -1,15 +1,15 @@
 <?php
 $groupedSeats = [];
 foreach ($seats as $seat) {
-    $groupedSeats[$seat['row_name']][] = $seat;
+    $groupedSeats[($seat['row_name'] ?? $seat['seat_row'] ?? '') ?? $seat['seat_row'] ?? 'A'][] = $seat;
 }
 
 function seat_class(array $seat): string {
-    if ((int) $seat['status'] === 0) {
+    if ((int) ($seat['status'] ?? 1) === 0) {
         return 'admin-seat admin-seat--disabled';
     }
 
-    return match ((int) $seat['type']) {
+    return match ((int) ($seat['type'] ?? 1)) {
         2 => 'admin-seat admin-seat--vip',
         3 => 'admin-seat admin-seat--couple',
         default => 'admin-seat admin-seat--standard',
@@ -19,16 +19,16 @@ function seat_class(array $seat): string {
 
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
-        <h2>SƠ ĐỒ GHẾ: <?= h($room['name']) ?></h2>
+        <h2>SƠ ĐỒ GHẾ: <?= h(($room['name'] ?? $room['room_name'] ?? 'Chưa cập nhật')) ?></h2>
         <p>Nhấn vào từng ghế để đổi trạng thái hoạt động hoặc bảo trì.</p>
     </div>
     <div class="d-flex gap-2">
-        <a class="admin-btn admin-btn--light" href="?action=rooms">
+        <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_rooms')) ?>">
             <i class="fa-solid fa-arrow-left"></i>
             <span>Danh sách phòng</span>
         </a>
-        <form method="POST" action="?action=generate_seats">
-            <input type="hidden" name="room_id" value="<?= (int) $room['room_id'] ?>">
+        <form method="POST" action="<?= h(admin_url('admin_generate_seats')) ?>">
+            <input type="hidden" name="room_id" value="<?= (int) ($room['room_id'] ?? 0) ?>">
             <button class="admin-btn admin-btn--ghost" type="submit">
                 <i class="fa-solid fa-wand-magic-sparkles"></i>
                 <span>Sinh ghế mặc định</span>
@@ -50,8 +50,8 @@ function seat_class(array $seat): string {
                         <div class="admin-seat-row">
                             <div class="admin-seat-label"><?= h($rowName) ?></div>
                             <?php foreach ($seatRow as $seat): ?>
-                                <a class="<?= seat_class($seat) ?>" href="?action=toggle_seat&seat_id=<?= (int) $seat['seat_id'] ?>&room_id=<?= (int) $room['room_id'] ?>">
-                                    <?= h($seat['row_name']) . (int) $seat['seat_number'] ?>
+                                <a class="<?= seat_class($seat) ?>" href="<?= h(admin_url('admin_toggle_seat', ['seat_id' => (int) ($seat['seat_id'] ?? 0), 'room_id' => (int) ($room['room_id'] ?? 0)])) ?>">
+                                    <?= h(($seat['row_name'] ?? $seat['seat_row'] ?? '')) . (int) ($seat['seat_number'] ?? 0) ?>
                                 </a>
                             <?php endforeach; ?>
                         </div>
@@ -74,8 +74,8 @@ function seat_class(array $seat): string {
                 <hr>
                 <div class="admin-note">
                     Tổng ghế: <?= count($seats) ?><br>
-                    Ghế hoạt động: <?= count(array_filter($seats, fn($seat) => (int) $seat['status'] === 1)) ?><br>
-                    Ghế bảo trì: <?= count(array_filter($seats, fn($seat) => (int) $seat['status'] === 0)) ?>
+                    Ghế hoạt động: <?= count(array_filter($seats, fn($seat) => (int) ($seat['status'] ?? 1) === 1)) ?><br>
+                    Ghế bảo trì: <?= count(array_filter($seats, fn($seat) => (int) ($seat['status'] ?? 1) === 0)) ?>
                 </div>
             </div>
         </div>

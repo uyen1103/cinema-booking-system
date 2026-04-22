@@ -1,14 +1,42 @@
 <?php
+function currentAuthScope(): string {
+    return (string) ($_SESSION['auth_scope'] ?? '');
+}
+
+function isCustomerLoggedIn(): bool {
+    return isset($_SESSION['customer_id']) && currentAuthScope() === 'customer';
+}
+
+function isEmployeeLoggedIn(): bool {
+    return isset($_SESSION['employee_id']) && currentAuthScope() === 'employee';
+}
+
+function currentCustomerId(): int {
+    return (int) ($_SESSION['customer_id'] ?? 0);
+}
+
+function currentEmployeeId(): int {
+    return (int) ($_SESSION['employee_id'] ?? 0);
+}
+
 function isLoggedIn(): bool {
-    return isset($_SESSION['user_id']);
+    return isCustomerLoggedIn() || isEmployeeLoggedIn();
 }
 
 function isAdmin(): bool {
-    return isLoggedIn() && isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'staff'], true);
+    return isEmployeeLoggedIn() && isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'staff'], true);
+}
+
+function isCustomer(): bool {
+    return isCustomerLoggedIn();
+}
+
+function isEmployee(): bool {
+    return isEmployeeLoggedIn();
 }
 
 function h($value): string {
-    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
 function format_currency($amount): string {
@@ -96,18 +124,21 @@ function delete_local_file(?string $path, array $protectedFiles = []): void {
     }
 }
 
-
 function app_url(string $action = '', array $params = [], string $entry = 'index.php'): string {
     $query = [];
     if ($action !== '') {
         $query['action'] = $action;
     }
     foreach ($params as $key => $value) {
-        if ($value !== null && $value != '') {
+        if ($value !== null && $value !== '') {
             $query[$key] = $value;
         }
     }
     return $entry . (!empty($query) ? '?' . http_build_query($query) : '');
+}
+
+function customer_url(string $action = 'home', array $params = []): string {
+    return app_url($action, $params, 'index.php');
 }
 
 function admin_url(string $action = 'admin_dashboard', array $params = []): string {
@@ -115,7 +146,7 @@ function admin_url(string $action = 'admin_dashboard', array $params = []): stri
 }
 
 function current_admin_name(): string {
-    return $_SESSION['full_name'] ?? 'Admin User';
+    return $_SESSION['full_name'] ?? 'Nhân sự hệ thống';
 }
 
 function current_admin_role(): string {
@@ -129,6 +160,26 @@ function current_admin_role(): string {
 
 function current_admin_avatar(): string {
     return $_SESSION['avatar'] ?? 'assets/images/default-avatar.svg';
+}
+
+function account_profile_url(): string {
+    return isAdmin() ? admin_url('admin_profile') : customer_url('profile');
+}
+
+function account_edit_profile_url(): string {
+    return isAdmin() ? admin_url('admin_edit_profile') : customer_url('edit-profile');
+}
+
+function account_change_password_url(): string {
+    return isAdmin() ? admin_url('admin_change_password') : customer_url('change-password');
+}
+
+function account_logout_url(): string {
+    return isAdmin() ? admin_url('admin_logout') : customer_url('logout');
+}
+
+function account_login_url(): string {
+    return customer_url('login');
 }
 
 function getPosterUrl($posterUrl): string {

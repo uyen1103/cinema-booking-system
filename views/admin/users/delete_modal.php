@@ -13,8 +13,9 @@
                     Thao tác này không thể hoàn tác. Toàn bộ dữ liệu liên quan tới tài khoản sẽ bị xóa.
                 </div>
 
-                <form method="POST" action="?action=delete_user" class="d-flex gap-2 justify-content-center">
+                <form method="POST" action="<?= h(admin_url('admin_delete_user')) ?>" class="d-flex gap-2 justify-content-center">
                     <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
+                    <input type="hidden" name="role" value="<?= h($user['role']) ?>">
                     <button class="admin-btn admin-btn--light" type="button" data-bs-dismiss="modal">Hủy bỏ</button>
                     <button class="admin-btn admin-btn--danger" type="submit">Xác nhận xóa</button>
                 </form>

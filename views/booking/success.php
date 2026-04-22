@@ -9,6 +9,16 @@ if (strpos($roomName, ' - ') !== false) {
 } else {
     $hallName = $roomName;
 }
+
+$paymentMethodLabel = match (strtolower((string) ($order['payment_method'] ?? 'cash'))) {
+    'momo' => 'Ví điện tử MoMo',
+    'zalopay' => 'Ví điện tử ZaloPay',
+    'vnpay' => 'Thanh toán QR / VNPAY',
+    'bank_transfer' => 'Thẻ / Chuyển khoản ngân hàng',
+    'cash' => 'Tiền mặt',
+    default => ucfirst((string) ($order['payment_method'] ?? 'Thanh toán trực tuyến')),
+};
+
 ?>
 
 <div class="page-section success-page">
@@ -40,7 +50,7 @@ if (strpos($roomName, ' - ') !== false) {
                                 <div class="summary-row"><span>Suất chiếu</span><strong><?php echo date('H:i - d/m/Y', strtotime($tickets[0]['show_date'] . ' ' . $tickets[0]['start_time'])); ?></strong></div>
                                 <div class="summary-row"><span>Rạp/Phòng </span><strong><?php echo htmlspecialchars($cinemaName); ?> / P.<?php echo htmlspecialchars($hallName); ?></strong></div>
                                 <div class="summary-row"><span>Ghế</span><strong><?php echo htmlspecialchars(implode(', ', array_map(function($ticket) { return $ticket['seat_row'] . $ticket['seat_number']; }, $tickets))); ?></strong></div>
-                                <div class="summary-row"><span>Hình thức thanh toán</span><strong>Ví điện tử MoMo</strong></div>
+                                <div class="summary-row"><span>Hình thức thanh toán</span><strong><?php echo htmlspecialchars($paymentMethodLabel); ?></strong></div>
                             </div>
                         </div>
                     </div>

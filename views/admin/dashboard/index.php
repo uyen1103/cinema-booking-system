@@ -42,20 +42,20 @@ $promotions = $overview['promotions'] ?? [];
                     <?php if (empty($pendingRequests)): ?>
                         <tr><td colspan="5"><div class="admin-empty"><i class="fa-regular fa-circle-check"></i><div>Không có yêu cầu hủy vé đang chờ duyệt.</div></div></td></tr>
                     <?php else: ?>
-                        <?php foreach ($pendingRequests as $request): ?>
+                        <?php foreach (($pendingRequests ?? []) as $request): ?>
                             <tr>
-                                <td class="fw-bold text-danger"><?= h($request['order_code']) ?></td>
-                                <td><div class="fw-bold"><?= h($request['full_name']) ?></div><div class="text-muted small"><?= h($request['email']) ?></div></td>
-                                <td><?= nl2br(h($request['reason'])) ?></td>
-                                <td><?= h(format_datetime($request['request_date'])) ?></td>
+                                <td class="fw-bold text-danger"><?= h(($request['order_code'] ?? '')) ?></td>
+                                <td><div class="fw-bold"><?= h(($request['full_name'] ?? 'Khách hàng')) ?></div><div class="text-muted small"><?= h($request['email']) ?></div></td>
+                                <td><?= nl2br(h(($request['reason'] ?? ''))) ?></td>
+                                <td><?= h(format_datetime($request['request_date'] ?? null)) ?></td>
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end gap-2 flex-wrap">
                                         <form method="POST" action="<?= h(admin_url('admin_approve_cancel')) ?>">
-                                            <input type="hidden" name="request_id" value="<?= (int) $request['request_id'] ?>">
+                                            <input type="hidden" name="request_id" value="<?= (int) ($request['request_id'] ?? 0) ?>">
                                             <button type="submit" name="decision" value="approved" class="admin-btn admin-btn--success">Duyệt</button>
                                         </form>
                                         <form method="POST" action="<?= h(admin_url('admin_approve_cancel')) ?>">
-                                            <input type="hidden" name="request_id" value="<?= (int) $request['request_id'] ?>">
+                                            <input type="hidden" name="request_id" value="<?= (int) ($request['request_id'] ?? 0) ?>">
                                             <button type="submit" name="decision" value="rejected" class="admin-btn admin-btn--danger">Từ chối</button>
                                         </form>
                                     </div>
@@ -92,14 +92,14 @@ $promotions = $overview['promotions'] ?? [];
             <table class="admin-table">
                 <thead><tr><th>Mã hóa đơn</th><th>Khách hàng</th><th>Ngày đặt</th><th>Thành tiền</th><th>Trạng thái</th><th>Thanh toán</th></tr></thead>
                 <tbody>
-                <?php foreach ($recentInvoices as $invoice): ?>
+                <?php foreach (($recentInvoices ?? []) as $invoice): ?>
                     <tr>
-                        <td class="fw-bold text-danger"><?= h($invoice['order_code']) ?></td>
-                        <td><?= h($invoice['full_name']) ?></td>
-                        <td><?= h(format_datetime($invoice['order_date'])) ?></td>
-                        <td><?= h(format_currency($invoice['final_amount'])) ?></td>
-                        <td><?= h(ucfirst($invoice['order_status'])) ?></td>
-                        <td><?= h(ucfirst($invoice['payment_status'])) ?></td>
+                        <td class="fw-bold text-danger"><?= h(($invoice['order_code'] ?? '')) ?></td>
+                        <td><?= h(($invoice['full_name'] ?? 'Khách hàng')) ?></td>
+                        <td><?= h(format_datetime($invoice['order_date'] ?? null)) ?></td>
+                        <td><?= h(format_currency($invoice['final_amount'] ?? 0)) ?></td>
+                        <td><?= h(ucfirst(($invoice['order_status'] ?? 'pending'))) ?></td>
+                        <td><?= h(ucfirst(($invoice['payment_status'] ?? 'pending'))) ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

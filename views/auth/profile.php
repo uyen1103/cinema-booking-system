@@ -20,7 +20,7 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="<?= h(app_url('profile')) ?>" class="profile-sidebar-item active">
+                <a href="<?= h(account_profile_url()) ?>" class="profile-sidebar-item active">
                     <i class="ri-user-smile-line"></i><span>Thông tin cá nhân</span>
                 </a>
                 <?php if (!isAdmin()): ?>
@@ -31,7 +31,7 @@
                     <i class="ri-coupon-2-line"></i><span>Voucher của tôi</span>
                 </a>
                 <?php endif; ?>
-                <a href="<?= h(app_url('change-password')) ?>" class="profile-sidebar-item">
+                <a href="<?= h(account_change_password_url()) ?>" class="profile-sidebar-item">
                     <i class="ri-lock-password-line"></i><span>Đổi mật khẩu</span>
                 </a>
                 <?php if (!isAdmin()): ?>
@@ -45,7 +45,7 @@
                 </a>
                 <?php endif; ?>
                 <div class="nav-divider"></div>
-                <a href="<?= h(app_url('logout')) ?>" class="profile-sidebar-item">
+                <a href="<?= h(account_logout_url()) ?>" class="profile-sidebar-item">
                     <i class="ri-logout-box-r-line"></i><span>Đăng xuất</span>
                 </a>
             </nav>
@@ -69,6 +69,8 @@
                     <h2 class="user-full-name"><?= htmlspecialchars($user['full_name'] ?? 'Họ và Tên') ?></h2>
                     <?php if (!isAdmin()): ?>
                     <span class="badge-membership">Thành viên bạc</span>
+                    <?php else: ?>
+                    <span class="badge-membership"><?= htmlspecialchars($user['position'] ?? (($user['role'] ?? '') === 'admin' ? 'Quản trị viên' : 'Nhân viên')) ?></span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -98,10 +100,34 @@
 
                 <div class="info-row">
                     <div class="info-group">
-                        <span class="info-label">Mại nhập hoà đơn</span>
+                        <span class="info-label">Địa chỉ</span>
                         <p class="info-value" style="width: 100%;"><?= htmlspecialchars($user['address'] ?? 'Chưa cập nhật') ?></p>
                     </div>
                 </div>
+
+
+                <?php if (isAdmin()): ?>
+                <div class="info-row">
+                    <div class="info-group">
+                        <span class="info-label">Vai trò</span>
+                        <p class="info-value"><?= htmlspecialchars(($user['role'] ?? '') === 'admin' ? 'Quản trị viên' : 'Nhân viên') ?></p>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Chức vụ</span>
+                        <p class="info-value"><?= htmlspecialchars($user['position'] ?? 'Chưa cập nhật') ?></p>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <div class="info-group">
+                        <span class="info-label">Cơ sở làm việc</span>
+                        <p class="info-value"><?= htmlspecialchars($user['branch_name'] ?? 'Chưa cập nhật') ?></p>
+                    </div>
+                    <div class="info-group">
+                        <span class="info-label">Ngày vào làm</span>
+                        <p class="info-value"><?= !empty($user['hire_date']) ? date('d/m/Y', strtotime($user['hire_date'])) : 'Chưa cập nhật' ?></p>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <?php if (!isAdmin()): ?>
                 <div class="info-row">
@@ -117,7 +143,7 @@
                 <?php endif; ?>
             </div>
 
-            <a href="<?= h(app_url('edit-profile')) ?>" class="update-profile-btn">
+            <a href="<?= h(account_edit_profile_url()) ?>" class="update-profile-btn">
                 <i class="ri-edit-2-fill"></i>Cập nhật thông tin cá nhân
             </a>
         </main>

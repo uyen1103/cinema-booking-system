@@ -57,10 +57,10 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
                     <div class="admin-form-grid admin-form-grid--2">
                         <div>
                             <label class="admin-form-label">Khách hàng</label>
-                            <select class="admin-select" name="user_id" required>
+                            <select class="admin-select" name="customer_id" required>
                                 <option value="">Chọn khách hàng</option>
                                 <?php foreach ($customers as $customer): ?>
-                                    <option value="<?= (int) $customer['user_id'] ?>"><?= h($customer['full_name']) ?> · <?= h($customer['email']) ?></option>
+                                    <option value="<?= (int) $customer['customer_id'] ?>"><?= h($customer['full_name']) ?> · <?= h($customer['email']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>

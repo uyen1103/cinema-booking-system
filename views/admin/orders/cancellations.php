@@ -38,12 +38,12 @@
                         <?php $isPending = ($request['status'] ?? '') === 'pending'; ?>
                         <tr>
                             <td>
-                                <div class="fw-bold text-danger"><?= h($request['order_code']) ?></div>
-                                <div class="text-muted small"><?= h(format_datetime($request['request_date'])) ?></div>
+                                <div class="fw-bold text-danger"><?= h($request['order_code'] ?? '') ?></div>
+                                <div class="text-muted small"><?= h(format_datetime($request['request_date'] ?? null)) ?></div>
                             </td>
                             <td>
-                                <div class="fw-bold"><?= h($request['full_name']) ?></div>
-                                <div class="text-muted small"><?= h($request['email']) ?></div>
+                                <div class="fw-bold"><?= h($request['full_name'] ?? 'Khách hàng') ?></div>
+                                <div class="text-muted small"><?= h($request['email'] ?? '') ?></div>
                             </td>
                             <td style="max-width: 280px; white-space: normal;"><?= nl2br(h($request['reason'])) ?></td>
                             <td>

@@ -11,7 +11,7 @@ function showtime_status_badge(int $status): string {
         <h2>QUẢN LÝ SUẤT CHIẾU</h2>
         <p>Kiểm soát lịch chiếu, phòng chiếu, giá vé và trạng thái bán vé.</p>
     </div>
-    <a class="admin-btn admin-btn--primary" href="?action=create_showtime">
+    <a class="admin-btn admin-btn--primary" href="<?= h(admin_url('admin_create_showtime')) ?>">
         <i class="fa-solid fa-plus"></i>
         <span>Thêm suất chiếu mới</span>
     </a>
@@ -89,24 +89,24 @@ function showtime_status_badge(int $status): string {
                         <tr>
                             <td>
                                 <div class="admin-movie-mini">
-                                    <img src="<?= h($showtime['movie_poster'] ?: 'assets/images/default-poster.svg') ?>" alt="Poster">
+                                    <img src="<?= h(($showtime['movie_poster'] ?? '') ?: 'assets/images/default-poster.svg') ?>" alt="Poster">
                                     <div>
-                                        <div class="fw-bold"><?= h($showtime['movie_title']) ?></div>
+                                        <div class="fw-bold"><?= h(($showtime['movie_title'] ?? $showtime['title'] ?? 'Chưa cập nhật')) ?></div>
                                         <div class="text-muted small">Mã suất: #SC<?= str_pad((string) $showtime['showtime_id'], 4, '0', STR_PAD_LEFT) ?></div>
                                     </div>
                                 </div>
                             </td>
-                            <td><?= h($showtime['room_name']) ?></td>
+                            <td><?= h(($showtime['room_name'] ?? $showtime['name'] ?? 'Chưa cập nhật')) ?></td>
                             <td>
-                                <div><?= h(format_date($showtime['show_date'])) ?></div>
-                                <div class="text-muted small"><?= h(substr($showtime['start_time'],0,5)) ?> - <?= h(substr($showtime['end_time'],0,5)) ?></div>
+                                <div><?= h(format_date($showtime['show_date'] ?? null)) ?></div>
+                                <div class="text-muted small"><?= h(substr(($showtime['start_time'] ?? ''),0,5)) ?> - <?= h(substr(($showtime['end_time'] ?? ''),0,5)) ?></div>
                             </td>
-                            <td><?= h(format_currency($showtime['price'])) ?></td>
-                            <td><?= number_format((int) $showtime['sold_tickets']) ?></td>
-                            <td><?= showtime_status_badge((int) $showtime['status']) ?></td>
+                            <td><?= h(format_currency($showtime['price'] ?? $showtime['base_price'] ?? 0)) ?></td>
+                            <td><?= number_format((int) ($showtime['sold_tickets'] ?? 0)) ?></td>
+                            <td><?= showtime_status_badge((int) ($showtime['status'] ?? 0)) ?></td>
                             <td>
                                 <div class="d-flex justify-content-end gap-2">
-                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="?action=edit_showtime&id=<?= (int) $showtime['showtime_id'] ?>">
+                                    <a class="admin-btn admin-btn--light admin-btn--icon" href="<?= h(admin_url('admin_edit_showtime', ['id' => (int) $showtime['showtime_id']])) ?>">
                                         <i class="fa-solid fa-pen"></i>
                                     </a>
                                     <button class="admin-btn admin-btn--danger admin-btn--icon" type="button" data-bs-toggle="modal" data-bs-target="#deleteShowtimeModal<?= (int) $showtime['showtime_id'] ?>">

@@ -17,7 +17,7 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
         <div class="admin-stat-card">
             <div class="admin-stat-card__head"><div class="admin-stat-card__icon admin-icon--green"><i class="fa-solid fa-wallet"></i></div></div>
             <div class="admin-stat-card__label">Doanh thu đã thu</div>
-            <div class="admin-stat-card__value"><?= number_format(($overviewOrders['paid_revenue'] ?? 0) / 1000000, 1) ?>M</div>
+            <div class="admin-stat-card__value"><?= number_format((($overviewOrders['paid_revenue'] ?? 0) / 1000000), 1) ?>M</div>
             <div class="admin-stat-card__meta"><?= h(format_currency($overviewOrders['paid_revenue'] ?? 0)) ?></div>
         </div>
     </div>
@@ -60,7 +60,7 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
             </div>
 
             <div class="admin-chart-bars">
-                <?php foreach ($revenueBars as $bar): ?>
+                <?php foreach (($revenueBars ?? []) as $bar): ?>
                     <div class="admin-chart-row">
                         <div class="fw-semibold text-muted"><?= h($bar['label']) ?></div>
                         <div class="admin-chart-bar">
@@ -103,13 +103,13 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
         <div class="admin-card__body">
             <h4 class="fw-bold mb-3">Top phim bán vé tốt</h4>
             <div class="admin-chart-bars">
-                <?php foreach ($topMovies as $movie): ?>
+                <?php foreach (($topMovies ?? []) as $movie): ?>
                     <div class="admin-chart-row">
-                        <div class="fw-semibold text-muted"><?= h($movie['title']) ?></div>
+                        <div class="fw-semibold text-muted"><?= h(($movie['title'] ?? 'Chưa cập nhật')) ?></div>
                         <div class="admin-chart-bar">
-                            <span class="admin-chart-fill" style="--bar-width: <?= max(8, (int) round(((int) $movie['ticket_count'] / $maxMovieTickets) * 100)) ?>%"></span>
+                            <span class="admin-chart-fill" style="--bar-width: <?= max(8, (int) round(((int) ($movie['ticket_count'] ?? 0) / $maxMovieTickets) * 100)) ?>%"></span>
                         </div>
-                        <div class="fw-semibold"><?= number_format((int) $movie['ticket_count']) ?> vé</div>
+                        <div class="fw-semibold"><?= number_format((int) ($movie['ticket_count'] ?? 0)) ?> vé</div>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -120,16 +120,16 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
         <div class="admin-card__body">
             <h4 class="fw-bold mb-3">Hiệu quả khuyến mãi</h4>
             <div class="admin-kpi-list">
-                <?php foreach ($promotionPerformance as $promotion): ?>
+                <?php foreach (($promotionPerformance ?? []) as $promotion): ?>
                     <div class="admin-kpi-item">
                         <div class="d-flex justify-content-between gap-2">
                             <div>
-                                <div class="fw-bold"><?= h($promotion['title']) ?></div>
-                                <div class="text-muted small"><?= h($promotion['code']) ?></div>
+                                <div class="fw-bold"><?= h(($promotion['title'] ?? 'Khuyến mãi')) ?></div>
+                                <div class="text-muted small"><?= h(($promotion['code'] ?? '')) ?></div>
                             </div>
                             <div class="text-end">
-                                <div class="fw-bold"><?= number_format((int) $promotion['used_count']) ?> lượt</div>
-                                <div class="text-muted small"><?= h(format_currency($promotion['budget'])) ?></div>
+                                <div class="fw-bold"><?= number_format((int) ($promotion['used_count'] ?? 0)) ?> lượt</div>
+                                <div class="text-muted small"><?= h(format_currency($promotion['budget'] ?? 0)) ?></div>
                             </div>
                         </div>
                     </div>
@@ -155,14 +155,14 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($recentInvoices as $invoice): ?>
+                <?php foreach (($recentInvoices ?? []) as $invoice): ?>
                     <tr>
-                        <td class="fw-bold text-danger"><?= h($invoice['order_code']) ?></td>
-                        <td><?= h($invoice['full_name']) ?></td>
-                        <td><?= h(format_datetime($invoice['order_date'])) ?></td>
-                        <td><?= h(format_currency($invoice['final_amount'])) ?></td>
-                        <td><?= h(ucfirst($invoice['order_status'])) ?></td>
-                        <td><?= h(ucfirst($invoice['payment_status'])) ?></td>
+                        <td class="fw-bold text-danger"><?= h(($invoice['order_code'] ?? '')) ?></td>
+                        <td><?= h(($invoice['full_name'] ?? 'Khách hàng')) ?></td>
+                        <td><?= h(format_datetime($invoice['order_date'] ?? null)) ?></td>
+                        <td><?= h(format_currency($invoice['final_amount'] ?? 0)) ?></td>
+                        <td><?= h(ucfirst(($invoice['order_status'] ?? 'pending'))) ?></td>
+                        <td><?= h(ucfirst(($invoice['payment_status'] ?? 'pending'))) ?></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>

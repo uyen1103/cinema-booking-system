@@ -1,6 +1,6 @@
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
-        <h2>CHI TIẾT HÓA ĐƠN: <?= h($order['order_code']) ?></h2>
+        <h2>CHI TIẾT HÓA ĐƠN: <?= h($order['order_code'] ?? '') ?></h2>
         <p>Kiểm tra danh sách vé, duyệt vé, hủy vé và cập nhật trạng thái thanh toán.</p>
     </div>
     <div class="d-flex gap-2 flex-wrap">
@@ -38,22 +38,22 @@
                 <div class="admin-form-grid admin-form-grid--2">
                     <div class="admin-kpi-item">
                         <div class="text-muted small">Khách hàng</div>
-                        <div class="fw-bold"><?= h($order['full_name']) ?></div>
-                        <div class="text-muted small"><?= h($order['email']) ?> · <?= h($order['phone']) ?></div>
+                        <div class="fw-bold"><?= h($order['full_name'] ?? 'Khách hàng') ?></div>
+                        <div class="text-muted small"><?= h($order['email'] ?? '') ?> · <?= h($order['phone']) ?></div>
                     </div>
                     <div class="admin-kpi-item">
                         <div class="text-muted small">Ngày đặt</div>
-                        <div class="fw-bold"><?= h(format_datetime($order['order_date'])) ?></div>
-                        <div class="text-muted small">Mã khuyến mãi: <?= h($order['promotion_code'] ?: 'Không áp dụng') ?></div>
+                        <div class="fw-bold"><?= h(format_datetime($order['order_date'] ?? null)) ?></div>
+                        <div class="text-muted small">Mã khuyến mãi: <?= h(($order['promotion_code'] ?? $order['promo_code'] ?? '') ?: 'Không áp dụng') ?></div>
                     </div>
                     <div class="admin-kpi-item">
                         <div class="text-muted small">Tổng tiền gốc</div>
-                        <div class="fw-bold"><?= h(format_currency($order['total_amount'])) ?></div>
+                        <div class="fw-bold"><?= h(format_currency($order['total_amount'] ?? 0)) ?></div>
                     </div>
                     <div class="admin-kpi-item">
                         <div class="text-muted small">Thành tiền</div>
-                        <div class="fw-bold text-success"><?= h(format_currency($order['final_amount'])) ?></div>
-                        <div class="text-muted small">Giảm: <?= h(format_currency($order['discount_amount'])) ?></div>
+                        <div class="fw-bold text-success"><?= h(format_currency($order['final_amount'] ?? 0)) ?></div>
+                        <div class="text-muted small">Giảm: <?= h(format_currency($order['discount_amount'] ?? 0)) ?></div>
                     </div>
                 </div>
 

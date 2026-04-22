@@ -28,11 +28,11 @@ class BookingController {
     }
 
     public function history(): void {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect(app_url('login'));
+        if (!isCustomerLoggedIn()) {
+            $this->redirect(customer_url('login'));
         }
 
-        $orders = $this->orderModel->getOrdersByUser((int) $_SESSION['user_id']);
+        $orders = $this->orderModel->getOrdersByCustomerId(currentCustomerId());
         $uniqueOrders = [];
         $ticketMap = [];
         $cancellationMap = [];
@@ -50,21 +50,21 @@ class BookingController {
     }
 
     public function cancelRequest(): void {
-        if (!isset($_SESSION['user_id'])) {
-            $this->redirect(app_url('login'));
+        if (!isCustomerLoggedIn()) {
+            $this->redirect(customer_url('login'));
         }
 
         $order_id = (int) ($_GET['order_id'] ?? 0);
         $order = $this->orderModel->getById($order_id);
-        if (!$order || (int) $order['user_id'] !== (int) $_SESSION['user_id']) {
-            $this->redirect(app_url('history'));
+        if (!$order || (int) ($order['customer_id'] ?? 0) !== currentCustomerId()) {
+            $this->redirect(customer_url('history'));
         }
 
         $isPaidOrder = in_array($order['payment_status'] ?? '', ['paid', 'success'], true)
             || in_array($order['order_status'] ?? '', ['completed', 'paid'], true);
         if (!$isPaidOrder || ($order['order_status'] ?? '') === 'cancelled') {
             set_flash('danger', 'Chỉ vé đã thanh toán mới có thể gửi yêu cầu hủy.');
-            $this->redirect(app_url('history'));
+            $this->redirect(customer_url('history'));
         }
 
         $existingRequest = $this->cancellationModel->getByOrder($order_id);
@@ -81,7 +81,7 @@ class BookingController {
             }
 
             if (empty($errors)) {
-                if ($this->cancellationModel->createRequest($order_id, (int) $_SESSION['user_id'], $reason)) {
+                if ($this->cancellationModel->createRequest($order_id, currentCustomerId(), $reason)) {
                     $success = 'Yêu cầu hủy vé đã được gửi. Nhân viên sẽ xử lý sớm.';
                     $existingRequest = $this->cancellationModel->getByOrder($order_id);
                 } else {
@@ -94,7 +94,7 @@ class BookingController {
     }
 
     public function cancellationRequests(): void {
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'], true)) {
+        if (!isEmployeeLoggedIn() || !isAdmin()) {
             $this->redirect('index.php');
         }
 
@@ -108,7 +108,7 @@ class BookingController {
     }
 
     public function approveCancellation(): void {
-        if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'], ['admin', 'staff'], true)) {
+        if (!isEmployeeLoggedIn() || !isAdmin()) {
             $this->redirect('index.php');
         }
 
@@ -118,9 +118,9 @@ class BookingController {
             $request = $this->cancellationModel->getById($request_id);
 
             if ($request && in_array($decision, ['approved', 'rejected'], true)) {
-                $this->cancellationModel->updateStatus($request_id, $decision);
+                $this->cancellationModel->updateStatus($request_id, $decision, currentEmployeeId(), trim($_POST['admin_note'] ?? ''));
                 if ($decision === 'approved') {
-                    $this->orderModel->cancelOrder((int) $request['order_id'], 'Duyệt yêu cầu hủy vé từ khách hàng');
+                    $this->orderModel->cancelOrder((int) $request['order_id'], 'Duyệt yêu cầu hủy vé từ khách hàng', currentEmployeeId());
                     set_flash('success', 'Đã duyệt yêu cầu hủy và cập nhật doanh thu/tình trạng vé.');
                 } else {
                     set_flash('success', 'Đã từ chối yêu cầu hủy vé.');
@@ -130,7 +130,7 @@ class BookingController {
             }
         }
 
-        $this->redirect('?action=cancellation-requests');
+        $this->redirect(admin_url('admin_cancellation_requests'));
     }
 }
 ?>

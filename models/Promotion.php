@@ -13,6 +13,26 @@ class Promotion {
         $this->columns = $this->fetchColumns();
     }
 
+    private function normalizePromotion(array $row): array {
+        $row['promotion_id'] = (int) ($row['promotion_id'] ?? 0);
+        $row['code'] = (string) ($row['code'] ?? $row['promo_code'] ?? '');
+        $row['promo_code'] = (string) ($row['promo_code'] ?? $row['code'] ?? '');
+        $row['title'] = (string) ($row['title'] ?? ($row['code'] !== '' ? ('Khuyến mãi ' . $row['code']) : 'Khuyến mãi'));
+        $row['description'] = (string) ($row['description'] ?? '');
+        $row['discount_type'] = (string) ($row['discount_type'] ?? 'percent');
+        $row['discount_value'] = (float) ($row['discount_value'] ?? 0);
+        $row['min_order_amount'] = (float) ($row['min_order_amount'] ?? $row['min_amount'] ?? 0);
+        $row['min_amount'] = (float) ($row['min_amount'] ?? $row['min_order_amount'] ?? 0);
+        $row['max_discount'] = ($row['max_discount'] ?? null) !== null ? (float) $row['max_discount'] : null;
+        $row['usage_limit'] = ($row['usage_limit'] ?? null) !== null ? (int) $row['usage_limit'] : null;
+        $row['used_count'] = (int) ($row['used_count'] ?? 0);
+        $row['budget'] = (float) ($row['budget'] ?? 0);
+        $row['start_date'] = $row['start_date'] ?? null;
+        $row['end_date'] = $row['end_date'] ?? null;
+        $row['status'] = (int) ($row['status'] ?? 1);
+        return $row;
+    }
+
     private function fetchColumns(): array {
         $columns = [];
         $rows = $this->conn->query("SHOW COLUMNS FROM {$this->table}")->fetchAll();
@@ -75,13 +95,14 @@ class Promotion {
         $sql .= " ORDER BY {$orderColumn} DESC, promotion_id DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll();
+        return array_map(fn(array $row) => $this->normalizePromotion($row), $stmt->fetchAll());
     }
 
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE promotion_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
+        $row = $stmt->fetch();
+        return $row ? $this->normalizePromotion($row) : null;
     }
 
     public function getByCode($promoCode): ?array {
@@ -98,9 +119,7 @@ class Promotion {
         if (!$promo) {
             return null;
         }
-        $promo['promo_code'] = $promo['code'] ?? $promo['promo_code'] ?? '';
-        $promo['min_amount'] = $promo['min_amount'] ?? $promo['min_order_amount'] ?? 0;
-        return $promo;
+        return $this->normalizePromotion($promo);
     }
 
     public function getActivePromotions(): array {
@@ -108,7 +127,7 @@ class Promotion {
                 FROM {$this->table}
                 WHERE start_date <= NOW() AND end_date >= NOW() AND (status = 1 OR status IS NULL)
                 ORDER BY start_date ASC";
-        return $this->conn->query($sql)->fetchAll();
+        return array_map(fn(array $row) => $this->normalizePromotion($row), $this->conn->query($sql)->fetchAll());
     }
 
     public function create(array $data): bool {
@@ -144,7 +163,17 @@ class Promotion {
         return $stmt->execute($params);
     }
 
+
+    public function canDelete(int $id): bool {
+        $stmt = $this->conn->prepare("SELECT COUNT(*) FROM orders WHERE promotion_id = :id");
+        $stmt->execute([':id' => $id]);
+        return (int) ($stmt->fetchColumn() ?: 0) === 0;
+    }
+
     public function delete(int $id): bool {
+        if (!$this->canDelete($id)) {
+            return false;
+        }
         $stmt = $this->conn->prepare("DELETE FROM {$this->table} WHERE promotion_id = :id");
         return $stmt->execute([':id' => $id]);
     }

@@ -70,7 +70,7 @@
     </nav>
 
     <div class="admin-sidebar__user">
-        <a href="<?= h(app_url('profile')) ?>" class="admin-user-card">
+        <a href="<?= h(admin_url('admin_profile')) ?>" class="admin-user-card">
             <img src="<?= h(current_admin_avatar()) ?>" alt="Avatar">
             <div class="flex-grow-1 overflow-hidden">
                 <div class="fw-bold text-truncate"><?= h(current_admin_name()) ?></div>

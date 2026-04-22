@@ -3,7 +3,7 @@
         <h2>THÊM PHIM MỚI</h2>
         <p>Nhập đầy đủ các thông tin cần thiết trước khi lưu vào cơ sở dữ liệu.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=movies">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -11,7 +11,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=store_movie" enctype="multipart/form-data" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_store_movie')) ?>" enctype="multipart/form-data" class="admin-form-grid">
             <div class="admin-form-grid admin-form-grid--2">
                 <div class="admin-form-grid">
                     <div>
@@ -91,7 +91,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=movies">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu phim</span>

@@ -114,25 +114,25 @@ function payment_status_badge(string $status): string {
                     <?php foreach ($orders as $order): ?>
                         <tr>
                             <td>
-                                <div class="fw-bold text-danger"><?= h($order['order_code']) ?></div>
-                                <div class="text-muted small"><?= h(format_datetime($order['order_date'])) ?></div>
+                                <div class="fw-bold text-danger"><?= h($order['order_code'] ?? '') ?></div>
+                                <div class="text-muted small"><?= h(format_datetime($order['order_date'] ?? null)) ?></div>
                             </td>
                             <td>
-                                <div class="fw-bold"><?= h($order['full_name']) ?></div>
-                                <div class="text-muted small"><?= h($order['email']) ?></div>
+                                <div class="fw-bold"><?= h($order['full_name'] ?? 'Khách hàng') ?></div>
+                                <div class="text-muted small"><?= h($order['email'] ?? '') ?></div>
                             </td>
-                            <td><?= number_format((int) $order['ticket_count']) ?> vé</td>
-                            <td><?= h($order['promotion_code'] ?: 'Không áp dụng') ?></td>
+                            <td><?= number_format((int) ($order['ticket_count'] ?? 0)) ?> vé</td>
+                            <td><?= h(($order['promotion_code'] ?? $order['promo_code'] ?? '') ?: 'Không áp dụng') ?></td>
                             <td>
-                                <div class="fw-bold"><?= h(format_currency($order['final_amount'])) ?></div>
-                                <?php if ((float) $order['discount_amount'] > 0): ?>
-                                    <div class="text-muted small">Giảm: <?= h(format_currency($order['discount_amount'])) ?></div>
+                                <div class="fw-bold"><?= h(format_currency($order['final_amount'] ?? 0)) ?></div>
+                                <?php if ((float) ($order['discount_amount'] ?? 0) > 0): ?>
+                                    <div class="text-muted small">Giảm: <?= h(format_currency($order['discount_amount'] ?? 0)) ?></div>
                                 <?php endif; ?>
                             </td>
-                            <td><?= payment_status_badge((string) $order['payment_status']) ?></td>
-                            <td><?= order_status_badge((string) $order['order_status']) ?></td>
+                            <td><?= payment_status_badge((string) ($order['payment_status'] ?? 'pending')) ?></td>
+                            <td><?= order_status_badge((string) ($order['order_status'] ?? 'pending')) ?></td>
                             <td class="text-end">
-                                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_order_detail', ['id' => (int) $order['order_id']])) ?>">
+                                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_order_detail', ['id' => (int) ($order['order_id'] ?? 0)])) ?>">
                                     <i class="fa-regular fa-eye"></i>
                                     <span>Xem</span>
                                 </a>

@@ -6,8 +6,8 @@
     <div class="auth-box register-box">
 
         <header class="auth-header">
-            <h2>Cập nhật thông tin</h2>
-            <p class="auth-subtitle">Điền đầy đủ thông tin để cập nhật tài khoản</p>
+            <h2><?= isAdmin() ? 'Cập nhật hồ sơ nhân sự' : 'Cập nhật thông tin' ?></h2>
+            <p class="auth-subtitle"><?= isAdmin() ? 'Chỉnh sửa hồ sơ dành riêng cho tài khoản quản trị/nhân viên' : 'Điền đầy đủ thông tin để cập nhật tài khoản' ?></p>
         </header>
 
         <?php if (!empty($errors)): ?>
@@ -18,7 +18,7 @@
             </div>
         <?php endif; ?>
 
-        <form method="POST" class="auth-form" action="<?= h(app_url('edit-profile')) ?>">
+        <form method="POST" class="auth-form" action="<?= h(account_edit_profile_url()) ?>">
             <div class="form-row">
                 <div class="form-group">
                     <label>Họ và Tên</label>
@@ -52,7 +52,7 @@
         </form>
 
         <div class="auth-links">
-            <p><a href="<?= h(app_url('profile')) ?>">Quay lại trang thông tin</a></p>
+            <p><a href="<?= h(account_profile_url()) ?>">Quay lại trang thông tin</a></p>
         </div>
     </div>
 </div>

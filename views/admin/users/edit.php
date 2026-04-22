@@ -4,7 +4,7 @@
         <h2><?= $isStaff ? 'CHỈNH SỬA NHÂN VIÊN' : 'CHỈNH SỬA KHÁCH HÀNG' ?></h2>
         <p>Cập nhật thông tin chi tiết và trạng thái hồ sơ trong hệ thống.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=<?= $isStaff ? 'employees' : 'customers' ?>">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url($isStaff ? 'admin_employees' : 'admin_customers')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -12,8 +12,9 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=update_user" enctype="multipart/form-data" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_update_user')) ?>" enctype="multipart/form-data" class="admin-form-grid">
             <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
+            <input type="hidden" name="role" value="<?= h($user['role']) ?>">
             <div class="admin-form-grid admin-form-grid--2">
                 <div>
                     <label class="admin-form-label">Ảnh đại diện</label>
@@ -106,7 +107,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=<?= $isStaff ? 'employees' : 'customers' ?>">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url($isStaff ? 'admin_employees' : 'admin_customers')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu thay đổi</span>

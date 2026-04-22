@@ -3,7 +3,7 @@ require_once __DIR__ . '/../models/Order.php';
 require_once __DIR__ . '/../models/Promotion.php';
 require_once __DIR__ . '/../models/Movie.php';
 require_once __DIR__ . '/../models/Showtime.php';
-require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Customer.php';
 require_once __DIR__ . '/../models/Ticket.php';
 require_once __DIR__ . '/../models/SeatPrice.php';
 require_once __DIR__ . '/../models/CancellationRequest.php';
@@ -13,7 +13,7 @@ class OrderController {
     private Promotion $promotionModel;
     private Movie $movieModel;
     private Showtime $showtimeModel;
-    private User $userModel;
+    private Customer $customerModel;
     private Ticket $ticketModel;
     private SeatPrice $seatPriceModel;
     private CancellationRequest $cancellationModel;
@@ -23,7 +23,7 @@ class OrderController {
         $this->promotionModel = new Promotion();
         $this->movieModel = new Movie();
         $this->showtimeModel = new Showtime();
-        $this->userModel = new User();
+        $this->customerModel = new Customer();
         $this->ticketModel = new Ticket();
         $this->seatPriceModel = new SeatPrice();
         $this->cancellationModel = new CancellationRequest();
@@ -84,16 +84,27 @@ class OrderController {
             $this->redirect(admin_url('admin_orders'));
         }
 
-        $userId = (int) ($_POST['user_id'] ?? 0);
+        $customerId = (int) ($_POST['customer_id'] ?? ($_POST['user_id'] ?? 0));
         $showtimeId = (int) ($_POST['showtime_id'] ?? 0);
         $selectedSeats = array_map('intval', $_POST['seat_ids'] ?? []);
         $paymentMethod = $_POST['payment_method'] ?? 'cash';
         $paymentStatus = $_POST['payment_status'] ?? 'pending';
         $orderStatus = $_POST['order_status'] ?? 'pending';
+        if (!in_array($paymentMethod, ['cash', 'bank_transfer', 'momo', 'vnpay'], true)) {
+            set_flash('danger', 'Phương thức thanh toán không hợp lệ.');
+            $this->redirect(admin_url('admin_create_order', ['showtime_id' => $showtimeId]));
+        }
+        if ($paymentStatus === 'paid' && $orderStatus === 'completed') {
+            $orderStatus = 'completed';
+        } elseif ($paymentStatus === 'paid' && $orderStatus !== 'cancelled') {
+            $orderStatus = 'pending';
+        } elseif ($paymentStatus !== 'paid' && $orderStatus === 'completed') {
+            $orderStatus = 'pending';
+        }
         $notes = trim($_POST['notes'] ?? '');
         $promotionId = !empty($_POST['promotion_id']) ? (int) $_POST['promotion_id'] : null;
 
-        if ($userId <= 0 || $showtimeId <= 0 || empty($selectedSeats)) {
+        if ($customerId <= 0 || $showtimeId <= 0 || empty($selectedSeats)) {
             set_flash('danger', 'Vui lòng chọn khách hàng, suất chiếu và ít nhất một ghế.');
             $this->redirect(admin_url('admin_create_order', ['showtime_id' => $showtimeId]));
         }
@@ -143,7 +154,7 @@ class OrderController {
         $finalAmount = max(0, $totalAmount - $discountAmount);
         $orderCode = 'ADM' . date('YmdHis') . rand(10, 99);
         $orderId = $this->orderModel->createManual([
-            'user_id' => $userId,
+            'customer_id' => $customerId,
             'promotion_id' => $promotionId,
             'order_code' => $orderCode,
             'total_amount' => $totalAmount,
@@ -153,6 +164,7 @@ class OrderController {
             'payment_status' => $paymentStatus,
             'order_status' => $orderStatus,
             'notes' => $notes,
+            'created_by_employee_id' => currentEmployeeId(),
         ]);
 
         if (!$orderId) {
@@ -171,6 +183,7 @@ class OrderController {
             'payment_status' => $paymentStatus,
             'payment_method' => $paymentMethod,
             'notes' => $notes,
+            'updated_by_employee_id' => currentEmployeeId(),
         ]);
 
         set_flash('success', 'Đã tạo đơn vé thành công.');
@@ -206,6 +219,8 @@ class OrderController {
             'notes' => trim($_POST['notes'] ?? ''),
         ];
 
+        $data['updated_by_employee_id'] = currentEmployeeId();
+
         if ($this->orderModel->updateStatus($id, $data)) {
             set_flash('success', 'Đã cập nhật hóa đơn.');
         } else {
@@ -220,7 +235,9 @@ class OrderController {
             $this->redirect(admin_url('admin_orders'));
         }
         $id = (int) ($_POST['order_id'] ?? 0);
-        if ($this->orderModel->approveOrder($id)) {
+        if (!$this->orderModel->canApproveOrder($id)) {
+            set_flash('danger', 'Chỉ có thể duyệt các đơn đã thanh toán và đang chờ xử lý.');
+        } elseif ($this->orderModel->approveOrder($id, currentEmployeeId())) {
             set_flash('success', 'Đã duyệt vé và ghi nhận doanh thu.');
         } else {
             set_flash('danger', 'Không thể duyệt vé.');
@@ -237,7 +254,7 @@ class OrderController {
             'requests' => $requests,
             'pendingCancellationCount' => $this->cancellationModel->countPending(),
             'selectedStatus' => $status,
-            'activeMenu' => 'dashboard',
+            'activeMenu' => 'orders',
             'breadcrumb' => 'Kiểm duyệt yêu cầu hủy vé',
             'pageTitle' => 'Kiểm duyệt yêu cầu hủy vé',
         ]);
@@ -262,14 +279,17 @@ class OrderController {
             $this->redirect(admin_url('admin_cancellation_requests'));
         }
 
-        if (!$this->cancellationModel->updateStatus($requestId, $decision)) {
+        if (!$this->cancellationModel->updateStatus($requestId, $decision, currentEmployeeId(), trim($_POST['admin_note'] ?? ''))) {
             set_flash('danger', 'Không thể cập nhật yêu cầu hủy vé.');
             $this->redirect(admin_url('admin_cancellation_requests'));
         }
 
         if ($decision === 'approved') {
-            $this->orderModel->cancelOrder((int) $request['order_id'], 'Duyệt yêu cầu hủy vé từ bảng điều khiển');
-            set_flash('success', 'Đã duyệt yêu cầu hủy vé. Danh sách và doanh thu đã được cập nhật.');
+            if ($this->orderModel->cancelOrder((int) $request['order_id'], 'Duyệt yêu cầu hủy vé từ bảng điều khiển', currentEmployeeId())) {
+                set_flash('success', 'Đã duyệt yêu cầu hủy vé. Danh sách và doanh thu đã được cập nhật.');
+            } else {
+                set_flash('danger', 'Đã cập nhật yêu cầu nhưng không thể hủy đơn liên quan.');
+            }
         } else {
             set_flash('info', 'Đã từ chối yêu cầu hủy vé.');
         }
@@ -283,7 +303,9 @@ class OrderController {
         }
         $id = (int) ($_POST['order_id'] ?? 0);
         $note = trim($_POST['cancel_note'] ?? 'Hủy bởi admin');
-        if ($this->orderModel->cancelOrder($id, $note)) {
+        if (!$this->orderModel->canCancelOrder($id)) {
+            set_flash('danger', 'Đơn vé đã ở trạng thái hủy.');
+        } elseif ($this->orderModel->cancelOrder($id, $note, currentEmployeeId())) {
             set_flash('success', 'Đã hủy vé/đơn và cập nhật lại doanh thu.');
         } else {
             set_flash('danger', 'Không thể hủy đơn vé.');

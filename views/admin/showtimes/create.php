@@ -3,7 +3,7 @@
         <h2>THÊM SUẤT CHIẾU MỚI</h2>
         <p>Thiết lập lịch chiếu, phòng chiếu và giá bán vé.</p>
     </div>
-    <a class="admin-btn admin-btn--light" href="?action=showtimes">
+    <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_showtimes')) ?>">
         <i class="fa-solid fa-arrow-left"></i>
         <span>Quay lại</span>
     </a>
@@ -11,7 +11,7 @@
 
 <div class="admin-card">
     <div class="admin-card__body">
-        <form method="POST" action="?action=store_showtime" class="admin-form-grid">
+        <form method="POST" action="<?= h(admin_url('admin_store_showtime')) ?>" class="admin-form-grid">
             <div class="admin-form-grid admin-form-grid--2">
                 <div>
                     <label class="admin-form-label">Bộ phim</label>
@@ -59,7 +59,7 @@
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <a class="admin-btn admin-btn--light" href="?action=showtimes">Hủy bỏ</a>
+                <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_showtimes')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">
                     <i class="fa-solid fa-floppy-disk"></i>
                     <span>Lưu suất chiếu</span>

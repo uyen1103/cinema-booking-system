@@ -45,17 +45,12 @@ class Ticket {
     public function getTicketsByOrder($orderId): array {
         $seatRowCol = 'row_name';
         $seatTypeCol = 'type';
-        $roomNameCol = 'name';
         try {
             $seatCols = $this->conn->query('SHOW COLUMNS FROM seats')->fetchAll();
             $seatMap = [];
             foreach ($seatCols as $row) $seatMap[strtolower($row['Field'])] = true;
             $seatRowCol = isset($seatMap['row_name']) ? 'row_name' : 'seat_row';
             $seatTypeCol = isset($seatMap['type']) ? 'type' : 'seat_type';
-            $roomCols = $this->conn->query('SHOW COLUMNS FROM rooms')->fetchAll();
-            $roomMap = [];
-            foreach ($roomCols as $row) $roomMap[strtolower($row['Field'])] = true;
-            $roomNameCol = isset($roomMap['name']) ? 'name' : 'room_name';
         } catch (Throwable $e) {
         }
 
@@ -68,7 +63,7 @@ class Ticket {
                          ELSE 'standard'
                        END AS seat_type,
                        st.show_date, st.start_time, st.end_time, st.room_id,
-                       r.{$roomNameCol} AS room_name,
+                       COALESCE(NULLIF(r.room_name, ''), r.name) AS room_name,
                        m.title, COALESCE(m.poster, m.poster_url) AS poster_url
                 FROM {$this->table} t
                 JOIN seats s ON t.seat_id = s.seat_id

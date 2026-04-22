@@ -116,7 +116,7 @@
                                         <div class="cinema-item">
                                             <div class="cinema-name">
                                                 <span class="cinema-icon">📍</span>
-                                                <span><?php echo htmlspecialchars($roomGroup['room_name']); ?></span>
+                                                <span><?php echo htmlspecialchars($roomGroup['room_name'] ?? ''); ?></span>
                                             </div>
                                             <div class="cinema-times">
                                                 <?php foreach ($roomGroup['showtimes'] as $showtime): ?>
@@ -181,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (bookNowBtn) {
             if (showtimeId) {
-                bookNowBtn.href = `index.php?action=book&showtime_id=${showtimeId}`;
+                bookNowBtn.href = `<?= customer_url('book') ?>&showtime_id=${showtimeId}`;
                 bookNowBtn.classList.remove('btn-disabled');
                 bookNowBtn.removeAttribute('aria-disabled');
             } else {
