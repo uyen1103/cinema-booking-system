@@ -1,4 +1,8 @@
 <?php
+// Model User - Lớp facade để tương thích với code cũ
+// Bên trong ủy thác cho 2 model riêng biệt: Customer và Employee
+
+// Include 2 model con
 require_once __DIR__ . '/Customer.php';
 require_once __DIR__ . '/Employee.php';
 
@@ -8,9 +12,11 @@ require_once __DIR__ . '/Employee.php';
  * internally uses separated Customer and Employee models.
  */
 class User {
+    // Khởi tạo 2 model con để ủy thác
     private Customer $customerModel;
     private Employee $employeeModel;
 
+    // Các thuộc tính (properties) của user - ánh xạ từ database
     public ?int $user_id = null;
     public string $full_name = '';
     public string $email = '';
@@ -20,28 +26,35 @@ class User {
     public ?string $address = null;
     public ?string $bank_account = null;
     public ?string $e_wallet_account = null;
-    public string $role = 'customer';
-    public string $status = 'active';
+    public string $role = 'customer';        // 'customer', 'admin', 'staff'
+    public string $status = 'active';         // 'active', 'inactive'
     public ?string $avatar = null;
-    public ?string $position = null;
-    public ?string $branch_name = null;
-    public ?string $hire_date = null;
+    public ?string $position = null;          // Chức vụ (cho employee)
+    public ?string $branch_name = null;       // Chi nhánh (cho employee)
+    public ?string $hire_date = null;         // Ngày vào làm (cho employee)
 
+    // Constructor: Khởi tạo 2 model để sử dụng
     public function __construct() {
         $this->customerModel = new Customer();
         $this->employeeModel = new Employee();
     }
 
+    // Hàm xác định scope hiện tại: 'customer' hoặc 'employee'
+    // Dựa vào role để quyết định dùng model nào
     private function scope(?string $scope = null): string {
+        // Nếu truyền scope cụ thể thì dùng trực tiếp
         if ($scope === 'customer') {
             return 'customer';
         }
         if ($scope === 'employee' || in_array($scope, ['admin', 'staff'], true)) {
             return 'employee';
         }
+        // Ngược lại dựa vào role hiện tại
         return in_array($this->role, ['admin', 'staff'], true) ? 'employee' : 'customer';
     }
 
+    // Hàm hydrate: Điền dữ liệu từ mảng database vào các thuộc tính
+    // Xử lý cả 3 trường hợp: user_id, customer_id, employee_id
     private function hydrate(array $row): void {
         $this->user_id = (int) ($row['user_id'] ?? ($row['customer_id'] ?? $row['employee_id'] ?? 0));
         $this->full_name = (string) ($row['full_name'] ?? '');

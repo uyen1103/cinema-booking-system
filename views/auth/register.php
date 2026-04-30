@@ -1,8 +1,10 @@
-<?php require_once __DIR__ . '/../layouts/header_auth.php'; ?>
-
+<?php 
+require_once __DIR__ . '/../layouts/header_auth.php'; ?>
 <link rel="stylesheet" href="assets/css/auth.css">
 
+<!-- Container chính -->
 <div class="auth-container">
+    <!-- Box đăng ký với class riêng -->
     <div class="auth-box register-box">
 
         <header class="auth-header">
@@ -10,20 +12,25 @@
             <p class="auth-subtitle">Tạo tài khoản để bắt đầu đặt vé xem phim</p>
         </header>
 
+        <!-- Hiển thị lỗi validation (nếu có) -->
         <?php if (!empty($errors)): ?>
             <div class="error-message">
-                <?php foreach ($errors as $error): ?>
+                <?php foreach ($errors as $error): // Duyệt mảng errors ?>
                     <p>❌ <?= htmlspecialchars($error) ?></p>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
 
+        <!-- Form đăng ký - method POST gửi dữ liệu lên server -->
         <form method="POST" class="auth-form">
+            <!-- Trường Họ và Tên (bắt buộc) -->
             <div class="form-group">
                 <label>Họ và Tên</label>
+                <!-- value giữ lại giá trị đã nhập nếu validation fail -->
                 <input type="text" name="full_name" placeholder="Nguyễn Văn A" required class="form-control" value="<?= htmlspecialchars($_POST['full_name'] ?? '') ?>">
             </div>
 
+            <!-- Hàng 2 cột: Email và Số điện thoại -->
             <div class="form-row">
                 <div class="form-group">
                     <label>Email</label>
@@ -35,6 +42,7 @@
                 </div>
             </div>
 
+            <!-- Hàng 2 cột: Ngày sinh và Địa chỉ (tùy chọn) -->
             <div class="form-row">
                 <div class="form-group">
                     <label>Ngày sinh</label>
@@ -46,17 +54,21 @@
                 </div>
             </div>
 
+            <!-- Trường Mật khẩu -->
             <div class="form-group">
                 <label>Mật khẩu</label>
                 <div class="password-input-container">
                     <input type="password" id="password" name="password" placeholder="••••••••" required class="form-control">
+                    <!-- Nút hiển/ẩn mật khẩu -->
                     <button type="button" class="password-toggle" onclick="togglePass('password')">👁️</button>
                 </div>
+                <!-- Hiển thị yêu cầu về mật khẩu -->
                 <div class="password-tips">
                     <small>• 8-50 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt</small>
                 </div>
             </div>
 
+            <!-- Trường Xác nhận mật khẩu (phải khớp với mật khẩu) -->
             <div class="form-group">
                 <label>Xác nhận mật khẩu</label>
                 <div class="password-input-container">
@@ -65,6 +77,7 @@
                 </div>
             </div>
 
+            <!-- Checkbox đồng ý điều khoản (bắt buộc) -->
             <div class="form-group terms">
                 <label class="checkbox-label">
                     <input type="checkbox" required> 
@@ -72,17 +85,22 @@
                 </label>
             </div>
 
+            <!-- Nút submit -->
             <button type="submit" class="btn-primary">Đăng Ký Ngay</button>
         </form>
 
+        <!-- Link chuyển sang trang đăng nhập -->
         <div class="auth-links">
             <p>Đã có tài khoản? <a href="<?= h(app_url('login')) ?>">Đăng nhập</a></p>
         </div>
 
+        <!-- Divider cho đăng ký bằng Google -->
         <div class="social-divider"><span>Hoặc đăng ký với</span></div>
 
+        <!-- Nút đăng ký Google -->
         <div class="social-login">
             <a href="<?= h(app_url('login')) ?>-google" class="social-btn">
+                <!-- SVG Google icon -->
                 <svg viewBox="0 0 24 24" width="20"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 <span>Google</span>
             </a>
@@ -90,13 +108,18 @@
     </div>
 </div>
 
+<!-- JavaScript xử lý hiển/ẩn mật khẩu -->
 <script>
+// Hàm togglePass: Chuyển đổi type input giữa password và text
 function togglePass(id) {
-    const input = document.getElementById(id);
-    const btn = input.nextElementSibling;
+    const input = document.getElementById(id); // Lấy input element
+    const btn = input.nextElementSibling; // Lấy button kế tiếp
+    // Đổi type: password <-> text
     input.type = input.type === 'password' ? 'text' : 'password';
     btn.textContent = input.type === 'password' ? '👁️' : '🙈';
 }
 </script>
 
-<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
+<?php 
+// Include footer
+require_once __DIR__ . '/../layouts/footer.php'; ?>

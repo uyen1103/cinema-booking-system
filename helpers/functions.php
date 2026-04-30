@@ -1,49 +1,76 @@
 <?php
+// Functions.php - Các hàm hỗ trợ (Helper Functions)
+// Được include ở đầu các file view để sử dụng các hàm tiện ích
+
+// NHÓM 1: HÀM KIỂM TRA ĐĂNG NHẬP VÀ QUYỀN
+
+// currentAuthScope(): Lấy scope hiện tại từ session ('customer' hoặc 'employee')
 function currentAuthScope(): string {
     return (string) ($_SESSION['auth_scope'] ?? '');
 }
 
+// isCustomerLoggedIn(): Kiểm tra khách hàng đã đăng nhập chưa
+// Cần có session customer_id và auth_scope = 'customer'
 function isCustomerLoggedIn(): bool {
     return isset($_SESSION['customer_id']) && currentAuthScope() === 'customer';
 }
 
+// isEmployeeLoggedIn(): Kiểm tra nhân viên đã đăng nhập chưa
 function isEmployeeLoggedIn(): bool {
     return isset($_SESSION['employee_id']) && currentAuthScope() === 'employee';
 }
 
+// currentCustomerId(): Lấy ID khách hàng hiện tại
 function currentCustomerId(): int {
     return (int) ($_SESSION['customer_id'] ?? 0);
 }
 
+// currentEmployeeId(): Lấy ID nhân viên hiện tại
 function currentEmployeeId(): int {
     return (int) ($_SESSION['employee_id'] ?? 0);
 }
 
+// isLoggedIn(): Kiểm tra bất kỳ user nào đã đăng nhập chưa
 function isLoggedIn(): bool {
     return isCustomerLoggedIn() || isEmployeeLoggedIn();
 }
 
+// isAdmin(): Kiểm tra user hiện tại có phải admin không
+// Cần: là employee + có role là 'admin' hoặc 'staff'
 function isAdmin(): bool {
     return isEmployeeLoggedIn() && isset($_SESSION['role']) && in_array($_SESSION['role'], ['admin', 'staff'], true);
 }
 
+// isCustomer(): Kiểm tra có phải khách hàng không
 function isCustomer(): bool {
     return isCustomerLoggedIn();
 }
 
+// isEmployee(): Kiểm tra có phải nhân viên không
 function isEmployee(): bool {
     return isEmployeeLoggedIn();
 }
 
+
+// NHÓM 2: HÀM FORMAT DỮ LIỆU
+
+
+// h(): Hàm escape HTML - chống XSS (Cross-Site Scripting)
+// Convert các ký tự đặc biệt thành HTML entities
 function h($value): string {
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+// format_currency(): Format số tiền theo kiểu Việt Nam
+// VD: 100000 -> "100.000 đ"
 function format_currency($amount): string {
     return number_format((float) $amount, 0, ',', '.') . ' đ';
 }
 
+// format_date(): Format ngày tháng
+// $date: chuỗi ngày (YYYY-MM-DD), $format: định dạng output
 function format_date(?string $date, string $format = 'd/m/Y'): string {
+    // Trả về '--' nếu ngày rỗng hoặc là '0000-00-00'
     if (empty($date) || $date === '0000-00-00') {
         return '--';
     }
@@ -52,6 +79,7 @@ function format_date(?string $date, string $format = 'd/m/Y'): string {
     return $timestamp ? date($format, $timestamp) : '--';
 }
 
+// format_datetime(): Format ngày giờ
 function format_datetime(?string $dateTime, string $format = 'd/m/Y H:i'): string {
     if (empty($dateTime)) {
         return '--';

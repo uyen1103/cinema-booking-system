@@ -1,81 +1,97 @@
-﻿/* auth.css - Cinema Central Authentication */
+﻿
 
 /* ===== 1. LAYOUT & RESET ===== */
+/* Thiết lập cơ bản cho body và container */
+
 body {
-    background-color: #ffffff;
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #ffffff; 
+    margin: 0; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
 }
 
+/* Container bao quanh toàn bộ form auth */
 .auth-container {
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 60px 16px;
+    justify-content: center; 
+    align-items: flex-start; 
+    min-height: 100vh; 
+    padding: 60px 16px; 
     background: #ffffff;
 }
 
+/* Box chính chứa form */
 .auth-box {
-    width: min(100%, 460px);
+    width: min(100%, 460px); 
     background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 16px 40px rgba(26, 43, 122, 0.12);
-    padding: 40px 36px;
-    border: 1px solid #e9ebf5;
-    animation: slideIn 0.4s ease;
+    border-radius: 20px; 
+    box-shadow: 0 16px 40px rgba(26, 43, 122, 0.12); 
+    padding: 40px 36px; 
+    border: 1px solid #e9ebf5; 
+    animation: slideIn 0.4s ease; 
 }
 
 /* ===== 2. HEADER FIX (Đẩy cụm Đăng nhập/Đăng ký sang bên phải) ===== */
+/* Căn chỉnh header trong trang auth */
+
+/* Container của header */
 .header .container {
     display: flex;
-    justify-content: space-between; /* Giữ Logo bên trái, đẩy mọi thứ khác sang phải */
+    justify-content: space-between; 
     align-items: center;
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px 20px;
 }
 
+/* Phần bên phải của header */
 .header-right {
-    margin-left: auto; /* Đảm bảo cụm này luôn nằm sát lề phải */
+    margin-left: auto; 
     display: flex;
     align-items: center;
 }
 
+/* Nhóm các nút hành động */
 .nav-group.nav-actions {
     display: flex;
     gap: 30px; 
     align-items: center;
 }
 
+/* Style cho các link trong nav */
 .nav-group.nav-actions .nav-link {
-    text-decoration: none;
-    font-weight: 700;
+    text-decoration: none; 
+    font-weight: 700; 
     color: #333;
     font-size: 14px;
-    transition: color 0.2s;
-    text-transform: uppercase;
+    transition: color 0.2s; 
+    text-transform: uppercase; 
     display: inline-block;
     line-height: 1;
 }
 
+/* Hover: đổi màu thành đỏ */
 .nav-group.nav-actions .nav-link:hover {
     color: #e71930;
 }
 
 /* ===== 3. FORM ELEMENTS & LỖI CHỮ BỊ LỆCH ===== */
+/* Style cho phần tiêu đề và form */
+
+/* Phần header của form */
 .auth-header {
     text-align: center;
     margin-bottom: 24px;
 }
 
+/* Tiêu đề form (h2) */
 .auth-box h2 {
-    color: #e71930;
+    color: #e71930; /* Màu đỏ thương hiệu */
     margin: 0 0 8px;
     font-size: 28px;
     font-weight: 800;
 }
 
+/* Khoảng cách giữa các form-group */
 .form-group {
     margin-bottom: 20px;
 }
