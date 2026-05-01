@@ -1,0 +1,8 @@
+# bật rewrite
+RewriteEngine On
+# nếu không phải file thật
+RewriteCond %{REQUEST_FILENAME} !-f
+# nếu không phải thư mục
+RewriteCond %{REQUEST_FILENAME} !-d
+# chuyển hết về index.php
+RewriteRule ^(.*)$ index.php?action=$1 [QSA,L]

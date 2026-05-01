@@ -1,0 +1,76 @@
+/* CSS cho sơ đồ ghế bám sát thiết kế UI */
+.screen-container {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.screen-glow {
+    height: 4px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, #ff4d4f 50%, rgba(255,255,255,0) 100%);
+    border-radius: 50%;
+    box-shadow: 0 5px 15px rgba(255, 77, 79, 0.5);
+    margin: 0 auto 15px auto;
+    width: 80%;
+}
+
+.screen-text {
+    color: #9ca3af;
+    font-weight: 700;
+    letter-spacing: 4px;
+    font-size: 0.85rem;
+}
+
+/* Thiết kế từng chiếc ghế */
+.seat-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.seat {
+    width: 42px;
+    height: 42px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    user-select: none;
+}
+
+.seat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Bảng màu theo yêu cầu thiết kế */
+.seat-standard {
+    background-color: #fef08a; 
+    color: #854d0e;
+}
+
+.seat-vip {
+    background-color: #fdba74; 
+    color: #9a3412;
+}
+
+.seat-sweetbox {
+    background-color: #fecdd3; 
+    color: #9f1239;
+    width: 94px; /* Rộng hơn vì là ghế đôi */
+}
+
+.seat-disabled {
+    background-color: #e5e7eb; 
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.seat-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}

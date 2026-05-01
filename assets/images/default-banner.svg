@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480" fill="none">
+<rect width="1200" height="480" rx="32" fill="#EEF2FF"/>
+<rect x="40" y="40" width="1120" height="400" rx="24" fill="#DBEAFE"/>
+<path d="M112 350l180-120 140 94 146-110 186 136H112z" fill="#60A5FA"/>
+<circle cx="350" cy="170" r="58" fill="#93C5FD"/>
+<text x="50%" y="82%" text-anchor="middle" fill="#1D4ED8" font-size="42" font-family="Arial" font-weight="700">Cinema Banner</text>
+</svg>

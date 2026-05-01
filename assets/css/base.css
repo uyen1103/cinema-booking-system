@@ -1,0 +1,48 @@
+﻿/*
+ * base.css - Các quy tắc CSS cơ bản và biến toàn cục
+ * File này chứa các reset CSS, biến màu sắc, và các quy tắc cơ bản cho toàn bộ website
+ * Bao gồm: reset margin/padding, biến CSS, font chữ, và layout cơ bản
+ */
+
+/* ===== RESET & VARIABLES ===== */
+/* Reset các margin và padding mặc định của các element HTML */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Đảm bảo hình ảnh không bị tràn và responsive */
+img,
+picture,
+svg,
+video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Định nghĩa các biến màu sắc và font chữ toàn cục */
+:root {
+    --primary-color: #e71930; /* Màu đỏ chính của rạp chiếu phim */
+    --secondary-color: #f5f5f5; /* Màu xám nhạt phụ */
+    --text-dark: #333; /* Màu chữ tối */
+    --text-light: #666; /* Màu chữ nhạt */
+    --border-color: #ddd; /* Màu viền */
+    --success-color: #28a745; /* Màu xanh lá thành công */
+    --error-color: #dc3545; /* Màu đỏ lỗi */
+    --warning-color: #ffc107; /* Màu vàng cảnh báo */
+}
+
+/* Cài đặt font chữ và màu nền cho toàn bộ trang */
+html, body {
+    height: 100%;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Font chữ hiện đại */
+    line-height: 1.6; /* Khoảng cách dòng */
+    color: var(--text-dark); /* Màu chữ mặc định */
+    background-color: #ffffff; /* Nền trắng */
+}
+
