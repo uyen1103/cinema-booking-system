@@ -1,5 +1,11 @@
-﻿/* layout.css - extracted from style.css */
+﻿/*
+ * layout.css - Các style cho bố cục trang web
+ * Bao gồm: container, header, navigation, main content, và footer
+ * Được trích xuất từ style.css gốc
+ */
+
 /* ===== LAYOUT ===== */
+/* Container chính để căn giữa nội dung */
 .container {
     max-width: 1300px;
     margin: 0 auto;
@@ -7,6 +13,7 @@
 }
 
 /* ===== HEADER ===== */
+/* Header của trang */
 .header {
     background: #ffffff;
     border-bottom: 1px solid rgba(231, 25, 48, 0.16);
@@ -238,19 +245,11 @@
 
 /* ===== MAIN CONTENT ===== */
 .main-content {
-    min-height: calc(100vh - 200px);
+    min-height: calc(10vh - 200px);
     padding: 40px 0;
 }
 
 /* ===== FOOTER ===== */
-.footer {
-    background: #222;
-    color: #fff;
-    text-align: center;
-    padding: 30px 0;
-    margin-top: 50px;
-}
-
 .footer a {
     color: var(--primary-color);
     text-decoration: none;

@@ -1,10 +1,14 @@
 <?php
-require_once __DIR__ . '/../models/Movie.php';
-require_once __DIR__ . '/../models/Order.php';
-require_once __DIR__ . '/../models/Ticket.php';
-require_once __DIR__ . '/../models/Promotion.php';
-require_once __DIR__ . '/../models/SeatPrice.php';
+require_once __DIR__ . '/../models/Movie.php'; // Model phim dùng để hiển thị thông tin phim và suất chiếu
+require_once __DIR__ . '/../models/Order.php'; // Model đơn hàng dùng để tạo và quản lý đơn vé
+require_once __DIR__ . '/../models/Ticket.php'; // Model vé dùng để giữ chỗ ghế và quản lý trạng thái vé
+require_once __DIR__ . '/../models/Promotion.php'; // Model khuyến mãi dùng để áp mã giảm giá
+require_once __DIR__ . '/../models/SeatPrice.php'; // Model giá ghế dùng để tính tiền theo loại ghế
 
+// Controller quản lý giao diện phim, đặt vé, checkout, và admin phim
+// - Hiển thị danh sách phim, chi tiết phim và suất chiếu
+// - Xử lý đặt vé, tạo đơn đặt vé và dòng thanh toán
+// - Hiển thị khuyến mãi và áp mã giảm giá
 class MovieController {
     private Movie $movieModel;
     private Order $orderModel;
@@ -22,6 +26,7 @@ class MovieController {
         $this->seatPriceModel = new SeatPrice();
     }
 
+    // Hiển thị view admin với layout admin chung
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -30,15 +35,18 @@ class MovieController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Chuyển hướng người dùng tới URL khác
     private function redirect(string $url): void {
         header("Location: {$url}");
         exit;
     }
 
+    // Tải ảnh lên thư mục upload nếu có file hợp lệ
     private function uploadImage(string $inputName, string $prefix, ?string $fallbackPath = null): ?string {
         return upload_file($_FILES[$inputName] ?? [], 'assets/uploads/movies', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'], $prefix) ?: $fallbackPath;
     }
 
+    // Kiểm tra mã khuyến mãi có thể áp dụng cho đơn hàng hiện tại hay không
     private function validatePromotionForOrder(array $promo, array $order, array $tickets): array {
         $totalTickets = count($tickets);
         $totalAmount = $order['total_amount'];
@@ -101,6 +109,8 @@ class MovieController {
         include __DIR__ . '/../views/movies/home.php';
     }
 
+    // Chức năng 4.3.4: Xem thông tin phim
+    // - Tải và hiển thị chi tiết phim, trailer, mô tả và suất chiếu liên quan
     public function detail(): void {
         $movie_id = (int) ($_GET['id'] ?? 0);
         $movie = $this->movieModel->getMovieById($movie_id);
@@ -112,6 +122,8 @@ class MovieController {
         include __DIR__ . '/../views/movies/detail.php';
     }
 
+    // Hỗ trợ chức năng đặt vé: chọn suất chiếu theo phim
+    // - Hiển thị danh sách suất chiếu của phim để khách hàng chọn
     public function selectShowtime(): void {
         $movie_id = (int) ($_GET['id'] ?? 0);
         $movie = $this->movieModel->getMovieById($movie_id);
@@ -123,6 +135,8 @@ class MovieController {
         include __DIR__ . '/../views/booking/select-showtime.php';
     }
 
+    // Chức năng 4.3.5 & 4.3.10: Đặt vé xem phim / tạo đơn đặt vé
+    // - Kiểm tra đăng nhập, chọn ghế, áp dụng mã khuyến mãi và tạo đơn vé tạm
     public function book(): void {
         if (!isCustomerLoggedIn()) {
             header('Location: ' . customer_url('login'));
@@ -181,6 +195,8 @@ class MovieController {
                 }
             }
 
+            // Nếu mọi ghế đều hợp lệ, tiếp tục xác thực mã khuyến mãi và tính tổng cuối cùng
+
             $finalAmount = $totalAmount;
             if ($promoCode !== '') {
                 $offer = $this->promotionModel->getByCode($promoCode);
@@ -216,13 +232,16 @@ class MovieController {
             }
 
             if (empty($errors)) {
+                // Tạo đơn đặt vé tạm trong bảng orders trước khi giữ ghế
                 $orderCode = 'ORD' . date('YmdHis') . rand(100, 999);
                 $order_id = $this->orderModel->create(currentCustomerId(), $promotion_id, $orderCode, $totalAmount, $discountAmount, $finalAmount);
                 if ($order_id) {
+                    // Nếu giữ ghế thành công thì chuyển đến trang checkout
                     if ($this->ticketModel->reserveTicketsWithPrice($order_id, $showtime_id, $seatPrices)) {
                         header('Location: ' . customer_url('checkout', ['order_id' => $order_id]));
                         exit;
                     }
+                    // Nếu giữ ghế thất bại thì xóa đơn để không lưu dữ liệu rác
                     $this->orderModel->deleteIfNoTickets($order_id);
                     $errors[] = 'Không thể tạo vé. Vui lòng thử lại.';
                 } else {
@@ -234,6 +253,8 @@ class MovieController {
         include __DIR__ . '/../views/booking/book.php';
     }
 
+    // Chức năng 4.3.6: Thanh toán đơn vé
+    // - Hiển thị trang thanh toán, áp mã giảm giá và cập nhật trạng thái đã thanh toán
     public function checkout(): void {
         if (!isCustomerLoggedIn()) {
             header('Location: ' . customer_url('login'));
@@ -273,6 +294,7 @@ class MovieController {
                     if (!$offer) {
                         $errors[] = 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.';
                     } else {
+                        // Kiểm tra điều kiện áp dụng mã với đơn hàng và vé
                         $validation = $this->validatePromotionForOrder($offer, $order, $tickets);
                         if (!$validation['applicable']) {
                             $errors[] = $validation['reason'];
@@ -310,7 +332,8 @@ class MovieController {
                 }
 
                 if (empty($errors)) {
-                    // Khách hàng đã thanh toán, nhưng đơn vẫn ở trạng thái chờ để admin theo dõi/duyệt vé.
+                    // Khách hàng xác nhận thanh toán thành công
+                    // Cập nhật đơn sang trạng thái đã thanh toán và chờ xử lý
                     $updated = $this->orderModel->updateStatus($order_id, [
                         'order_status' => 'pending',
                         'payment_status' => 'paid',
@@ -329,6 +352,8 @@ class MovieController {
         include __DIR__ . '/../views/booking/checkout.php';
     }
 
+    // Chức năng xác nhận thành công sau khi thanh toán
+    // - Hiển thị thông tin đơn đã thanh toán và vé đã đặt
     public function success(): void {
         if (!isCustomerLoggedIn()) {
             header('Location: ' . customer_url('login'));
@@ -368,6 +393,8 @@ class MovieController {
         include __DIR__ . '/../views/movies/theaters.php';
     }
 
+    // Chức năng 4.3.9: Xem khuyến mãi đang có
+    // - Hiển thị danh sách mã khuyến mãi và ưu đãi đang hoạt động
     public function promotions(): void {
         $activePromotions = $this->promotionModel->getActivePromotions();
         include __DIR__ . '/../views/movies/promotions.php';

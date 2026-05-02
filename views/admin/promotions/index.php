@@ -1,4 +1,5 @@
 <?php
+// Ham hien thi nhan trang thai khuyen mai.
 function promotion_status_badge(array $promotion): string {
     $isRunning = (int) $promotion['status'] === 1;
     return $isRunning
@@ -6,11 +7,13 @@ function promotion_status_badge(array $promotion): string {
         : '<span class="admin-badge admin-badge--muted">Tạm ngưng</span>';
 }
 
+// Ham hien thi nhan loai khuyen mai.
 function promotion_type_label(string $type): string {
     return $type === 'fixed' ? 'Coupon' : 'Trực tiếp';
 }
 ?>
 
+<!-- Tieu de trang va nut them khuyen mai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>QUẢN LÝ KHUYẾN MÃI</h2>
@@ -22,6 +25,7 @@ function promotion_type_label(string $type): string {
     </a>
 </div>
 
+<!-- Thong ke nhanh khuyen mai -->
 <div class="row g-3 admin-section">
     <div class="col-md-3">
         <div class="admin-stat-card">
@@ -57,6 +61,7 @@ function promotion_type_label(string $type): string {
     </div>
 </div>
 
+<!-- Bo loc va bang danh sach khuyen mai -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <form method="GET" class="admin-filter-bar mb-4">

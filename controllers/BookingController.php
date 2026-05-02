@@ -1,8 +1,12 @@
 <?php
-require_once __DIR__ . '/../models/Order.php';
-require_once __DIR__ . '/../models/Ticket.php';
-require_once __DIR__ . '/../models/CancellationRequest.php';
+require_once __DIR__ . '/../models/Order.php'; // Model đơn hàng dùng cho lịch sử, hủy và duyệt đơn
+require_once __DIR__ . '/../models/Ticket.php'; // Model vé dùng để truy vấn và thay đổi trạng thái vé
+require_once __DIR__ . '/../models/CancellationRequest.php'; // Model yêu cầu hủy vé dùng cho gửi và duyệt hủy
 
+// Controller xử lý lịch sử đặt vé, hủy vé của khách hàng và duyệt yêu cầu hủy từ admin
+// - Hiển thị lịch sử đặt vé cho khách hàng
+// - Xử lý yêu cầu hủy vé và gửi thông báo
+// - Admin duyệt hoặc từ chối yêu cầu hủy vé
 class BookingController {
     private Order $orderModel;
     private Ticket $ticketModel;
@@ -14,6 +18,7 @@ class BookingController {
         $this->cancellationModel = new CancellationRequest();
     }
 
+    // Hiển thị view trang admin dành cho đơn hàng và yêu cầu hủy
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -22,11 +27,14 @@ class BookingController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Chuyển hướng người dùng tới URL khác
     private function redirect(string $url): void {
         header('Location: ' . $url);
         exit;
     }
 
+    // Chức năng 4.3.7: Xem lịch sử đặt vé
+    // - Tải danh sách đơn đặt vé của khách hàng và hiển thị chi tiết các vé đã đặt
     public function history(): void {
         if (!isCustomerLoggedIn()) {
             $this->redirect(customer_url('login'));
@@ -49,6 +57,8 @@ class BookingController {
         include __DIR__ . '/../views/booking/history.php';
     }
 
+    // Chức năng 4.3.8: Hủy đặt vé
+    // - Khách hàng gửi yêu cầu hủy vé cho đơn đã thanh toán
     public function cancelRequest(): void {
         if (!isCustomerLoggedIn()) {
             $this->redirect(customer_url('login'));
@@ -60,6 +70,7 @@ class BookingController {
             $this->redirect(customer_url('history'));
         }
 
+        // Chỉ cho phép yêu cầu hủy với đơn đã thanh toán và chưa bị hủy
         $isPaidOrder = in_array($order['payment_status'] ?? '', ['paid', 'success'], true)
             || in_array($order['order_status'] ?? '', ['completed', 'paid'], true);
         if (!$isPaidOrder || ($order['order_status'] ?? '') === 'cancelled') {
@@ -72,6 +83,7 @@ class BookingController {
         $success = '';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy lý do hủy vé và kiểm tra dữ liệu đầu vào
             $reason = trim($_POST['reason'] ?? '');
             if ($reason === '') {
                 $errors[] = 'Vui lòng nhập lý do hủy vé.';
@@ -81,6 +93,7 @@ class BookingController {
             }
 
             if (empty($errors)) {
+                // Tạo yêu cầu hủy vé và lưu trạng thái pending
                 if ($this->cancellationModel->createRequest($order_id, currentCustomerId(), $reason)) {
                     $success = 'Yêu cầu hủy vé đã được gửi. Nhân viên sẽ xử lý sớm.';
                     $existingRequest = $this->cancellationModel->getByOrder($order_id);
@@ -93,6 +106,7 @@ class BookingController {
         include __DIR__ . '/../views/booking/cancel.php';
     }
 
+    // Chức năng admin: Quản lý các yêu cầu hủy vé từ khách hàng
     public function cancellationRequests(): void {
         if (!isEmployeeLoggedIn() || !isAdmin()) {
             $this->redirect('index.php');
@@ -107,6 +121,8 @@ class BookingController {
         ]);
     }
 
+    // Chức năng 4.3.11: Duyệt hủy vé
+    // - Nhân viên/Quản trị viên duyệt hoặc từ chối yêu cầu hủy vé của khách hàng
     public function approveCancellation(): void {
         if (!isEmployeeLoggedIn() || !isAdmin()) {
             $this->redirect('index.php');
@@ -118,8 +134,10 @@ class BookingController {
             $request = $this->cancellationModel->getById($request_id);
 
             if ($request && in_array($decision, ['approved', 'rejected'], true)) {
+                // Cập nhật trạng thái yêu cầu hủy vé và ghi lại ai xử lý
                 $this->cancellationModel->updateStatus($request_id, $decision, currentEmployeeId(), trim($_POST['admin_note'] ?? ''));
                 if ($decision === 'approved') {
+                    // Nếu duyệt yêu cầu, hủy đơn liên quan và cập nhật trạng thái vé
                     $this->orderModel->cancelOrder((int) $request['order_id'], 'Duyệt yêu cầu hủy vé từ khách hàng', currentEmployeeId());
                     set_flash('success', 'Đã duyệt yêu cầu hủy và cập nhật doanh thu/tình trạng vé.');
                 } else {

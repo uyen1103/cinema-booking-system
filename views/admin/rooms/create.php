@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>THÊM PHÒNG CHIẾU MỚI</h2>
@@ -9,6 +10,7 @@
     </a>
 </div>
 
+<!-- Form tao phong chieu moi -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_store_room')) ?>" class="admin-form-grid">

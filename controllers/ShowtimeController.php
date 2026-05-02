@@ -8,12 +8,14 @@ class ShowtimeController {
     private Movie $movieModel;
     private Room $roomModel;
 
+    // Khoi tao cac model can thiet.
     public function __construct() {
         $this->showtimeModel = new Showtime();
         $this->movieModel = new Movie();
         $this->roomModel = new Room();
     }
 
+    // Render view admin cua module suat chieu.
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -22,11 +24,13 @@ class ShowtimeController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Redirect den URL chi dinh.
     private function redirect(string $url): void {
         header("Location: {$url}");
         exit;
     }
 
+    // Kiem tra du lieu suat chieu truoc khi luu.
     private function validatePayload(array $data, int $ignoreId = 0): ?string {
         if ($data['movie_id'] <= 0 || !$this->movieModel->getById($data['movie_id'])) {
             return 'Phim được chọn không tồn tại.';
@@ -50,6 +54,7 @@ class ShowtimeController {
         return null;
     }
 
+    // Danh sach suat chieu va bo loc.
     public function index(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -67,6 +72,7 @@ class ShowtimeController {
         ]);
     }
 
+    // Hien thi form tao suat chieu.
     public function create(): void {
         $this->renderAdmin('create', [
             'movies' => $this->movieModel->getAll([]),
@@ -77,6 +83,7 @@ class ShowtimeController {
         ]);
     }
 
+    // Xu ly tao suat chieu.
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_showtimes'));
@@ -106,6 +113,7 @@ class ShowtimeController {
         $this->redirect(admin_url('admin_showtimes'));
     }
 
+    // Hien thi form sua suat chieu.
     public function edit(int $id): void {
         $showtime = $this->showtimeModel->getById($id);
         if (!$showtime) {
@@ -123,6 +131,7 @@ class ShowtimeController {
         ]);
     }
 
+    // Xu ly cap nhat suat chieu.
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_showtimes'));
@@ -159,6 +168,7 @@ class ShowtimeController {
         $this->redirect(admin_url('admin_showtimes'));
     }
 
+    // Xu ly xoa suat chieu.
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_showtimes'));

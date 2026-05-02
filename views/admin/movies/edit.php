@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut quay lai danh sach phim -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>CHỈNH SỬA PHIM: <?= h($movie['title']) ?></h2>
@@ -9,6 +10,7 @@
     </a>
 </div>
 
+<!-- Form chinh sua phim -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_update_movie')) ?>" enctype="multipart/form-data" class="admin-form-grid">
@@ -17,6 +19,7 @@
             <div class="admin-form-grid admin-form-grid--2">
                 <div class="admin-form-grid">
                     <div>
+                        <!-- Poster hien tai va upload moi -->
                         <label class="admin-form-label">Poster hiện tại</label>
                         <div class="admin-image-preview admin-image-preview--poster mb-3">
                             <img src="<?= h($movie['poster'] ?: 'assets/images/default-poster.svg') ?>" alt="Poster">
@@ -24,6 +27,7 @@
                         <input class="admin-file" type="file" name="poster" accept=".jpg,.jpeg,.png,.webp,.svg">
                     </div>
                     <div>
+                        <!-- Banner hien tai va upload moi -->
                         <label class="admin-form-label">Banner hiện tại</label>
                         <div class="admin-image-preview admin-image-preview--banner mb-3">
                             <img src="<?= h($movie['banner'] ?: 'assets/images/default-banner.svg') ?>" alt="Banner">
@@ -34,6 +38,7 @@
 
                 <div class="admin-form-grid">
                     <div>
+                        <!-- Thong tin co ban cua phim -->
                         <label class="admin-form-label">Tên phim</label>
                         <input class="admin-input" type="text" name="title" value="<?= h($movie['title']) ?>" required>
                     </div>
@@ -50,6 +55,7 @@
                     </div>
 
                     <div>
+                        <!-- The loai co goi y tu danh sach -->
                         <label class="admin-form-label">Thể loại</label>
                         <input class="admin-input" type="text" name="genre" value="<?= h($movie['genre']) ?>" list="movie-genres-edit">
                         <datalist id="movie-genres-edit">
@@ -86,12 +92,14 @@
                     </div>
 
                     <div>
+                        <!-- Mo ta chi tiet cua phim -->
                         <label class="admin-form-label">Mô tả phim</label>
                         <textarea class="admin-textarea" name="description"><?= h($movie['description']) ?></textarea>
                     </div>
                 </div>
             </div>
 
+            <!-- Nhom nut thao tac -->
             <div class="d-flex justify-content-end gap-2">
                 <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">

@@ -1,3 +1,4 @@
+<!-- Modal xac nhan xoa nguoi dung -->
 <div class="modal fade" id="deleteUserModal<?= (int) $user['user_id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content admin-card admin-modal-danger">
@@ -13,6 +14,7 @@
                     Thao tác này không thể hoàn tác. Toàn bộ dữ liệu liên quan tới tài khoản sẽ bị xóa.
                 </div>
 
+                <!-- Form gui yeu cau xoa -->
                 <form method="POST" action="<?= h(admin_url('admin_delete_user')) ?>" class="d-flex gap-2 justify-content-center">
                     <input type="hidden" name="user_id" value="<?= (int) $user['user_id'] ?>">
                     <input type="hidden" name="role" value="<?= h($user['role']) ?>">

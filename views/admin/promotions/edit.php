@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>CHỈNH SỬA KHUYẾN MÃI</h2>
@@ -9,6 +10,7 @@
     </a>
 </div>
 
+<!-- Form cap nhat khuyen mai -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_update_promotion')) ?>" enctype="multipart/form-data" class="admin-form-grid">

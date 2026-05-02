@@ -1,4 +1,5 @@
 <?php
+// Ham hien thi nhan trang thai suat chieu.
 function showtime_status_badge(int $status): string {
     return $status === 1
         ? '<span class="admin-badge admin-badge--success">Mở bán vé</span>'
@@ -6,6 +7,7 @@ function showtime_status_badge(int $status): string {
 }
 ?>
 
+<!-- Tieu de trang va nut them suat chieu -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>QUẢN LÝ SUẤT CHIẾU</h2>
@@ -17,6 +19,7 @@ function showtime_status_badge(int $status): string {
     </a>
 </div>
 
+<!-- Thong ke nhanh ve suat chieu -->
 <div class="row g-3 admin-section">
     <div class="col-md-3">
         <div class="admin-stat-card">
@@ -48,6 +51,7 @@ function showtime_status_badge(int $status): string {
     </div>
 </div>
 
+<!-- Bo loc va bang danh sach suat chieu -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <form method="GET" class="admin-filter-bar mb-4">

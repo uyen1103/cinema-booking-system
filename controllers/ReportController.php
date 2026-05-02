@@ -6,11 +6,13 @@ class ReportController {
     private Report $reportModel;
     private CancellationRequest $cancellationModel;
 
+    // Khoi tao model bao cao va yeu cau huy.
     public function __construct() {
         $this->reportModel = new Report();
         $this->cancellationModel = new CancellationRequest();
     }
 
+    // Render view admin voi layout chung.
     private function render(string $viewFile, array $data): void {
         extract($data);
         ob_start();
@@ -19,6 +21,7 @@ class ReportController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Trang bang dieu khien admin.
     public function dashboard(): void {
         $overview = $this->reportModel->getOverview();
         $recentInvoices = $this->reportModel->getRecentInvoices(8);
@@ -34,6 +37,7 @@ class ReportController {
         ]);
     }
 
+    // Trang bao cao thong ke.
     public function reports(): void {
         $year = (int) ($_GET['year'] ?? date('Y'));
         $overview = $this->reportModel->getOverview();

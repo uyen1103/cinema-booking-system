@@ -1,7 +1,9 @@
 <?php
+// Luu showtime dang duoc chon.
 $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
 ?>
 
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>TẠO ĐƠN VÉ</h2>
@@ -13,10 +15,12 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
     </a>
 </div>
 
+<!-- Chia cot: chon suat chieu va tao don -->
 <div class="row g-3 admin-section">
     <div class="col-lg-4">
         <div class="admin-card admin-form-card">
             <div class="admin-card__body">
+                <!-- Form chon suat chieu -->
                 <form method="GET" class="admin-form-grid">
                     <input type="hidden" name="action" value="create_order">
                     <div>
@@ -33,12 +37,14 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
                 </form>
 
                 <?php if ($selectedShowtime): ?>
+                    <!-- Thong tin suat chieu dang chon -->
                     <div class="admin-kpi-item mt-3">
                         <div class="text-muted small">Phim</div>
                         <div class="fw-bold"><?= h($selectedShowtime['title']) ?></div>
                         <div class="text-muted small"><?= h($selectedShowtime['room_name']) ?> · <?= h(format_date($selectedShowtime['show_date'])) ?> · <?= h(substr($selectedShowtime['start_time'], 0, 5)) ?></div>
                     </div>
                 <?php else: ?>
+                    <!-- Trang thai chua chon suat chieu -->
                     <div class="admin-empty py-4">
                         <i class="fa-regular fa-calendar"></i>
                         <div>Chọn suất chiếu để tiếp tục.</div>
@@ -51,6 +57,7 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
     <div class="col-lg-8">
         <div class="admin-card admin-form-card">
             <div class="admin-card__body">
+                <!-- Form tao don ve thu cong -->
                 <form method="POST" action="<?= h(admin_url('admin_store_order')) ?>" class="admin-form-grid">
                     <input type="hidden" name="showtime_id" value="<?= $selectedShowtimeId ?>">
 
@@ -105,6 +112,7 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
                     </div>
 
                     <div>
+                        <!-- Chon ghe con trong -->
                         <label class="admin-form-label">Chọn ghế</label>
                         <?php if (empty($seatMap)): ?>
                             <div class="admin-empty py-4">
@@ -127,6 +135,7 @@ $selectedShowtimeId = (int) ($selectedShowtime['showtime_id'] ?? 0);
                         <?php endif; ?>
                     </div>
 
+                    <!-- Nhom nut thao tac -->
                     <div class="d-flex gap-2 flex-wrap">
                         <button class="admin-btn admin-btn--primary" type="submit">
                             <i class="fa-solid fa-ticket"></i>

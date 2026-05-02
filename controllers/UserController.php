@@ -7,11 +7,13 @@ class UserController {
     private Employee $employeeModel;
     private string $defaultAvatar = 'assets/images/default-avatar.svg';
 
+    // Khoi tao model khach hang va nhan vien.
     public function __construct() {
         $this->customerModel = new Customer();
         $this->employeeModel = new Employee();
     }
 
+    // Render view admin cua module user.
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -20,15 +22,18 @@ class UserController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Redirect den URL chi dinh.
     private function redirect(string $url): void {
         header("Location: {$url}");
         exit;
     }
 
+    // Chuan hoa pham vi thao tac dua tren role.
     private function resolveScope(?string $roleOrScope): string {
         return $roleOrScope === 'customer' ? 'customer' : 'employee';
     }
 
+    // Kiem tra email trung tren ca hai bang theo scope.
     private function emailExistsGlobally(string $email, ?int $ignoreId = null, string $scope = 'customer'): bool {
         if ($scope === 'customer') {
             return $this->customerModel->emailExists($email, $ignoreId) || $this->employeeModel->emailExists($email, null);
@@ -36,6 +41,7 @@ class UserController {
         return $this->employeeModel->emailExists($email, $ignoreId) || $this->customerModel->emailExists($email, null);
     }
 
+    // Danh sach nhan vien (staff).
     public function indexEmployee(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -56,6 +62,7 @@ class UserController {
         ]);
     }
 
+    // Danh sach khach hang.
     public function indexCustomer(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -76,6 +83,7 @@ class UserController {
         ]);
     }
 
+    // Hien thi form tao nguoi dung theo role.
     public function create(string $role): void {
         $this->renderAdmin('create', [
             'userRole' => $role,
@@ -87,6 +95,7 @@ class UserController {
         ]);
     }
 
+    // Xu ly luu nguoi dung moi tu admin.
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_employees'));
@@ -146,6 +155,7 @@ class UserController {
         $this->redirect($redirect);
     }
 
+    // Hien thi form sua thong tin nguoi dung.
     public function edit(int $id): void {
         $scope = isset($_GET['action']) && str_contains((string) $_GET['action'], 'customer') ? 'customer' : 'employee';
         $user = $scope === 'customer' ? $this->customerModel->getById($id) : $this->employeeModel->getById($id);
@@ -165,6 +175,7 @@ class UserController {
         ]);
     }
 
+    // Xu ly cap nhat thong tin nguoi dung.
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_employees'));
@@ -234,6 +245,7 @@ class UserController {
         $this->redirect($redirect);
     }
 
+    // Xoa nguoi dung neu du dieu kien.
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_employees'));
@@ -271,6 +283,7 @@ class UserController {
         $this->redirect($user['role'] === 'staff' ? admin_url('admin_employees') : admin_url('admin_customers'));
     }
 
+    // Bat/tat trang thai tai khoan nguoi dung.
     public function toggleStatus(): void {
         $id = (int) ($_GET['id'] ?? 0);
         $role = $_GET['role'] ?? 'customer';

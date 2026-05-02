@@ -1,4 +1,5 @@
 <?php
+// Ham hien thi nhan trang thai don hang.
 function order_status_badge(string $status): string {
     return match ($status) {
         'completed', 'paid' => '<span class="admin-badge admin-badge--success">Hoàn tất</span>',
@@ -7,6 +8,7 @@ function order_status_badge(string $status): string {
     };
 }
 
+// Ham hien thi nhan trang thai thanh toan.
 function payment_status_badge(string $status): string {
     return match ($status) {
         'paid', 'success' => '<span class="admin-badge admin-badge--success">Đã thanh toán</span>',
@@ -17,6 +19,7 @@ function payment_status_badge(string $status): string {
 }
 ?>
 
+<!-- Tieu de trang va cac nut thao tac -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3 align-items-start">
     <div>
         <h2>QUẢN LÝ HÓA ĐƠN</h2>
@@ -34,6 +37,7 @@ function payment_status_badge(string $status): string {
     </div>
 </div>
 
+<!-- Thong ke nhanh hoa don -->
 <div class="row g-3 admin-section">
     <div class="col-md-3">
         <div class="admin-stat-card">
@@ -66,6 +70,7 @@ function payment_status_badge(string $status): string {
     </div>
 </div>
 
+<!-- Bo loc va bang danh sach hoa don -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <form method="GET" class="admin-filter-bar mb-4">

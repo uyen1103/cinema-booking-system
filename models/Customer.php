@@ -1,17 +1,23 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/database.php'; // Cấu hình cơ sở dữ liệu cho model khách hàng
 
+// Model quản lý thông tin khách hàng, đăng ký, đăng nhập, cập nhật cá nhân và OAuth
+// - Đồng bộ dữ liệu với bảng users legacy nếu cần
+// - Hỗ trợ xác thực bằng email, số điện thoại, mật khẩu hoặc OAuth
+// - Quản lý profile, trạng thái và liên kết tài khoản
 class Customer {
     private PDO $conn;
     private string $table = 'customers';
     private string $legacyTable = 'users';
 
+    // Khởi tạo kết nối DB và đảm bảo bảng customers đã tồn tại
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
         $this->ensureSchema();
     }
 
+    // Chuẩn hóa dữ liệu khách hàng trước khi trả về
     private function normalizeRow(array $row): array {
         $row['customer_id'] = (int) ($row['customer_id'] ?? $row['user_id'] ?? 0);
         $row['user_id'] = (int) ($row['customer_id'] ?? 0);
@@ -31,10 +37,12 @@ class Customer {
         return $row;
     }
 
+    // Chuẩn hóa trạng thái khách hàng
     private function normalizeStatus(?string $status): string {
         return in_array($status, ['active', 'inactive', 'blocked'], true) ? $status : 'active';
     }
 
+    // Kiểm tra bảng có tồn tại trên cơ sở dữ liệu
     private function tableExists(string $table): bool {
         try {
             $stmt = $this->conn->query("SHOW TABLES LIKE '{$table}'");
@@ -44,6 +52,7 @@ class Customer {
         }
     }
 
+    // Kiểm tra cột có tồn tại trong bảng không
     private function hasColumn(string $table, string $column): bool {
         try {
             $stmt = $this->conn->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name");
@@ -54,12 +63,14 @@ class Customer {
         }
     }
 
+    // Thêm cột nếu bảng còn thiếu trường đó
     private function addColumnIfMissing(string $table, string $column, string $definition): void {
         if (!$this->hasColumn($table, $column)) {
             $this->conn->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
         }
     }
 
+    // Đồng bộ bảng users legacy để khách hàng cũ vẫn có thể đăng nhập và so sánh dữ liệu
     private function ensureLegacyTable(): void {
         if (!$this->tableExists($this->legacyTable)) {
             $this->conn->exec("CREATE TABLE {$this->legacyTable} (
@@ -103,6 +114,7 @@ class Customer {
         $this->addColumnIfMissing($this->legacyTable, 'updated_at', 'TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     }
 
+    // Khởi tạo và đồng bộ schema bảng customers để đảm bảo dữ liệu khách hàng có đủ trường cần thiết
     private function ensureSchema(): void {
         if (!$this->tableExists($this->table)) {
             $this->conn->exec("CREATE TABLE {$this->table} (
@@ -141,6 +153,7 @@ class Customer {
         $this->bootstrapFromLegacyCustomers();
     }
 
+    // Đồng bộ dữ liệu khách hàng từ bảng users legacy vào bảng customers nếu chưa tồn tại
     private function bootstrapFromLegacyCustomers(): void {
         if (!$this->tableExists($this->legacyTable)) {
             return;
@@ -159,6 +172,7 @@ class Customer {
         }
     }
 
+    // Đồng bộ dữ liệu customer sang bảng users legacy nếu cần
     private function mirrorToLegacyUser(array $customer): void {
         $this->ensureLegacyTable();
         $email = trim((string) ($customer['email'] ?? ''));
@@ -212,6 +226,7 @@ class Customer {
         $this->conn->prepare($sql)->execute($params);
     }
 
+    // Xóa bản ghi legacy user tương ứng khi khách hàng bị xóa
     private function deleteLegacyUser(string $email): void {
         if (!$this->tableExists($this->legacyTable) || trim($email) === '') {
             return;
@@ -220,6 +235,7 @@ class Customer {
         $stmt->execute([':email' => trim($email)]);
     }
 
+    // Tìm khách hàng legacy theo email hoặc số điện thoại
     private function findLegacyCustomerByLogin(string $identifier): ?array {
         if (!$this->tableExists($this->legacyTable)) {
             return null;
@@ -231,6 +247,7 @@ class Customer {
         return $row ?: null;
     }
 
+    // Tạo khách hàng mới từ dữ liệu legacy nếu chưa có trong bảng customers
     private function syncFromLegacyUser(array $legacy): ?array {
         $existing = $this->findByEmail((string) ($legacy['email'] ?? ''));
         if ($existing) {
@@ -285,7 +302,12 @@ class Customer {
         return (bool) $stmt->fetch();
     }
 
+    // Chức năng 4.3.1: Đăng ký tài khoản
+    // - Tạo khách hàng mới trong bảng customers
+    // - Mã hóa mật khẩu và lưu trữ an toàn
+    // - Đồng bộ dữ liệu sang bảng users legacy để duy trì tính tương thích
     public function register(array $data): bool {
+        // Lưu thông tin khách hàng vào bảng customers, mã hóa mật khẩu
         $stmt = $this->conn->prepare("INSERT INTO {$this->table}
             (full_name, email, password, phone, birthday, address, bank_account, e_wallet_account, status, avatar)
             VALUES (:full_name, :email, :password, :phone, :birthday, :address, :bank_account, :e_wallet_account, :status, :avatar)");
@@ -303,6 +325,7 @@ class Customer {
             ':avatar' => $data['avatar'] ?: 'assets/images/default-avatar.svg',
         ]);
 
+        // Nếu tạo thành công, đồng bộ dữ liệu sang bảng legacy users để giữ tính tương thích
         if ($ok) {
             $customer = $this->findByEmail((string) $data['email']);
             if ($customer) {
@@ -312,12 +335,17 @@ class Customer {
         return $ok;
     }
 
+    // Chức năng 4.3.2: Đăng nhập hệ thống
+    // - Kiểm tra email hoặc số điện thoại và mật khẩu để xác thực khách hàng
+    // - Dùng dữ liệu bảng chính và legacy users để hỗ trợ khách hàng cũ
     public function authenticate(string $identifier, string $password): ?array {
+        // Tìm khách hàng trong bảng customers trước
         $customer = $this->findByLogin($identifier);
         if ($customer && password_verify($password, $customer['password']) && !in_array($customer['status'], ['inactive', 'blocked'], true)) {
             return $customer;
         }
 
+        // Nếu không tìm được trong bảng chính, thử đăng nhập người dùng legacy
         $legacy = $this->findLegacyCustomerByLogin($identifier);
         if (!$legacy) {
             return null;
@@ -329,6 +357,7 @@ class Customer {
             return null;
         }
 
+        // Đồng bộ người dùng legacy sang bảng customers và trả về thông tin
         return $this->syncFromLegacyUser($legacy);
     }
 
@@ -507,6 +536,9 @@ class Customer {
         return $this->adminUpdate($customerId, ['status' => $newStatus]);
     }
 
+    // Chức năng 4.3.3: Cập nhật tài khoản cá nhân
+    // - Cho phép khách hàng cập nhật thông tin cá nhân trong hồ sơ
+    // - Đồng bộ thông tin mới sang bảng users legacy nếu cần
     public function updateProfile(int $customerId, array $data): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table}
             SET full_name = :full_name,
@@ -560,6 +592,7 @@ class Customer {
         return $ok;
     }
 
+    // Tìm khách hàng đã liên kết OAuth theo provider và oauth_id
     public function findByOAuth(string $provider, string $oauthId): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE oauth_provider = :provider AND oauth_id = :oauth_id LIMIT 1");
         $stmt->execute([':provider' => $provider, ':oauth_id' => $oauthId]);
@@ -570,6 +603,8 @@ class Customer {
         return $this->normalizeRow($row);
     }
 
+    // Đăng ký tài khoản khách hàng từ OAuth
+    // - Tạo bản ghi mới với thông tin Google và lưu oauth_provider/oauth_id
     public function registerOAuth(array $data, string $provider, string $oauthId): bool {
         $stmt = $this->conn->prepare("INSERT INTO {$this->table}
             (full_name, email, password, phone, birthday, address, bank_account, e_wallet_account, status, avatar, oauth_provider, oauth_id)
@@ -599,6 +634,8 @@ class Customer {
         return $ok;
     }
 
+    // Liên kết tài khoản đã có với OAuth provider
+    // - Dùng khi đăng nhập Google trùng email với tài khoản hiện tại
     public function linkOAuthAccount(int $customerId, string $provider, string $oauthId): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET oauth_provider = :provider, oauth_id = :oauth_id WHERE customer_id = :id");
         $ok = $stmt->execute([

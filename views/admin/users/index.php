@@ -1,8 +1,10 @@
 <?php
+// Xac dinh dang xem nhan vien hay khach hang.
 $isStaff = $userRole === 'staff';
 $roleLabel = $isStaff ? 'nhân viên' : 'khách hàng';
 $createAction = $isStaff ? 'create_employee' : 'create_customer';
 
+// Ham hien thi nhan trang thai nguoi dung.
 function user_status_badge(string $status, bool $isStaff): string {
     return match ($status) {
         'working', 'active' => '<span class="admin-badge admin-badge--success">● ' . ($isStaff ? 'Đang làm việc' : 'Đang hoạt động') . '</span>',
@@ -13,6 +15,7 @@ function user_status_badge(string $status, bool $isStaff): string {
 }
 ?>
 
+<!-- Tieu de trang va nut them moi -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between align-items-start gap-3">
     <div>
         <h2><?= $isStaff ? 'QUẢN LÝ NHÂN VIÊN' : 'QUẢN LÝ KHÁCH HÀNG' ?></h2>
@@ -24,6 +27,7 @@ function user_status_badge(string $status, bool $isStaff): string {
     </a>
 </div>
 
+<!-- Thong ke nhanh nguoi dung -->
 <div class="row g-3 admin-section">
     <div class="col-md-4">
         <div class="admin-stat-card">
@@ -57,6 +61,7 @@ function user_status_badge(string $status, bool $isStaff): string {
     </div>
 </div>
 
+<!-- Bo loc va bang danh sach nguoi dung -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <form method="GET" class="admin-filter-bar mb-4">

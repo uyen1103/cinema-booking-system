@@ -4,10 +4,12 @@ require_once __DIR__ . '/../models/Promotion.php';
 class PromotionController {
     private Promotion $promotionModel;
 
+    // Khoi tao model khuyen mai.
     public function __construct() {
         $this->promotionModel = new Promotion();
     }
 
+    // Render view admin cua module khuyen mai.
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -16,11 +18,13 @@ class PromotionController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Redirect den URL chi dinh.
     private function redirect(string $url): void {
         header("Location: {$url}");
         exit;
     }
 
+    // Danh sach khuyen mai va bo loc.
     public function index(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -37,6 +41,7 @@ class PromotionController {
         ]);
     }
 
+    // Hien thi form tao khuyen mai.
     public function create(): void {
         $this->renderAdmin('create', [
             'activeMenu' => 'promotions',
@@ -45,6 +50,7 @@ class PromotionController {
         ]);
     }
 
+    // Xu ly tao khuyen mai.
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_promotions'));
@@ -85,6 +91,7 @@ class PromotionController {
         $this->redirect(admin_url('admin_promotions'));
     }
 
+    // Hien thi form sua khuyen mai.
     public function edit(int $id): void {
         $promotion = $this->promotionModel->getById($id);
         if (!$promotion) {
@@ -100,6 +107,7 @@ class PromotionController {
         ]);
     }
 
+    // Xu ly cap nhat khuyen mai.
     public function update(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_promotions'));
@@ -152,6 +160,7 @@ class PromotionController {
         $this->redirect(admin_url('admin_promotions'));
     }
 
+    // Xu ly xoa khuyen mai.
     public function delete(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_promotions'));

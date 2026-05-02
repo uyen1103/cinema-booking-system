@@ -1,3 +1,4 @@
+<!-- Modal xac nhan xoa phim -->
 <div class="modal fade" id="deleteMovieModal<?= (int) $movie['movie_id'] ?>" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content admin-card admin-modal-danger">
@@ -13,6 +14,7 @@
                     Phim, lịch chiếu và dữ liệu liên quan sẽ bị xóa nếu cơ sở dữ liệu đang bật khóa ngoại.
                 </div>
 
+                <!-- Form gui yeu cau xoa phim -->
                 <form method="POST" action="<?= h(admin_url('admin_delete_movie')) ?>" class="d-flex justify-content-center gap-2">
                     <input type="hidden" name="movie_id" value="<?= (int) $movie['movie_id'] ?>">
                     <button class="admin-btn admin-btn--light" type="button" data-bs-dismiss="modal">Hủy</button>

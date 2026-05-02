@@ -1,9 +1,12 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+// Model quản lý yêu cầu hủy vé của khách hàng và luồng Duyệt/Không duyệt
 class CancellationRequest {
     private PDO $conn;
     private string $table = 'cancellation_requests';
+
+    // Khởi tạo model yêu cầu hủy và đảm bảo schema tồn tại
 
     public function __construct() {
         $database = new Database();
@@ -11,6 +14,7 @@ class CancellationRequest {
         $this->ensureSchema();
     }
 
+    // Chuẩn hóa dữ liệu yêu cầu hủy trước khi trả về
     private function normalizeRequest(array $row): array {
         $row['request_id'] = (int) ($row['request_id'] ?? 0);
         $row['order_id'] = (int) ($row['order_id'] ?? 0);
@@ -29,6 +33,7 @@ class CancellationRequest {
         return $row;
     }
 
+    // Kiểm tra cột tồn tại trong bảng cancellation_requests
     private function hasColumn(string $table, string $column): bool {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name");
         $stmt->execute([':table_name' => $table, ':column_name' => $column]);
@@ -85,6 +90,7 @@ class CancellationRequest {
         }
     }
 
+    // Lấy user_id legacy tương ứng nếu cần đồng bộ với bảng users cũ
     private function resolveLegacyCustomerUserId(int $customerId): ?int {
         if ($customerId <= 0 || !$this->hasColumn($this->table, 'user_id')) {
             return null;
@@ -103,6 +109,7 @@ class CancellationRequest {
         }
     }
 
+    // Tạo yêu cầu hủy vé mới cho đơn hàng
     public function createRequest($orderId, $customerId, $reason): bool {
         $existing = $this->getByOrder((int) $orderId);
         if ($existing && in_array($existing['status'] ?? '', ['pending', 'approved'], true)) {
@@ -123,6 +130,7 @@ class CancellationRequest {
         return $stmt->execute([':order_id' => $orderId, ':customer_id' => $customerId, ':reason' => $reason]);
     }
 
+    // Lấy yêu cầu hủy gần nhất theo order_id
     public function getByOrder($orderId): ?array {
         $stmt = $this->conn->prepare("SELECT request_id, order_id, customer_id AS user_id, customer_id, reason, status, request_date, processed_by_employee_id, processed_note, processed_at
             FROM {$this->table} WHERE order_id = :order_id ORDER BY request_date DESC LIMIT 1");
@@ -135,6 +143,7 @@ class CancellationRequest {
         return $this->getAll('pending');
     }
 
+    // Lấy danh sách yêu cầu hủy theo trạng thái
     public function getAll(?string $status = null): array {
         $sql = "SELECT r.request_id, r.order_id, r.customer_id AS user_id, r.customer_id, r.reason, r.status, r.request_date,
                        r.processed_by_employee_id, r.processed_note, r.processed_at,

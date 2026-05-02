@@ -2,11 +2,13 @@
 require_once __DIR__ . '/../models/Employee.php';
 
 class AdminAuthController {
+    // Redirect den URL chi dinh.
     private function redirect(string $url): void {
         header('Location: ' . $url);
         exit;
     }
 
+    // Luu thong tin nhan vien vao session.
     private function seedSession(array $employee): void {
         $_SESSION['employee_id'] = (int) $employee['employee_id'];
         $_SESSION['full_name'] = $employee['full_name'];
@@ -20,6 +22,7 @@ class AdminAuthController {
         unset($_SESSION['customer_id']);
     }
 
+    // Hien thi trang dang nhap cho admin/nhan vien.
     public function login(): void {
         if (isEmployeeLoggedIn()) {
             $this->redirect(admin_url('admin_dashboard'));
@@ -43,6 +46,7 @@ class AdminAuthController {
         include __DIR__ . '/../views/auth/login.php';
     }
 
+    // Hien thi thong tin ho so.
     public function profile(): void {
         if (!isEmployeeLoggedIn()) {
             $this->redirect(app_url('admin_login'));
@@ -52,6 +56,7 @@ class AdminAuthController {
         include __DIR__ . '/../views/auth/profile.php';
     }
 
+    // Cap nhat thong tin ho so.
     public function editProfile(): void {
         if (!isEmployeeLoggedIn()) {
             $this->redirect(app_url('admin_login'));
@@ -97,6 +102,7 @@ class AdminAuthController {
         include __DIR__ . '/../views/auth/edit-profile.php';
     }
 
+    // Doi mat khau nhan vien.
     public function changePassword(): void {
         if (!isEmployeeLoggedIn()) {
             $this->redirect(app_url('admin_login'));
@@ -130,6 +136,7 @@ class AdminAuthController {
         include __DIR__ . '/../views/auth/change-password.php';
     }
 
+    // Dang xuat va xoa session.
     public function logout(): void {
         session_unset();
         session_destroy();

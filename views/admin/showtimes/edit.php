@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>CHỈNH SỬA SUẤT CHIẾU #<?= str_pad((string) $showtime['showtime_id'], 4, '0', STR_PAD_LEFT) ?></h2>
@@ -9,6 +10,7 @@
     </a>
 </div>
 
+<!-- Form cap nhat suat chieu -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_update_showtime')) ?>" class="admin-form-grid">

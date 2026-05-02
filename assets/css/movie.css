@@ -1,6 +1,9 @@
-/* movie.css - movie detail and showtime styles */
+/*
+ * movie.css - Các style cho trang chi tiết phim và suất chiếu
+ * Bao gồm: layout chi tiết phim, poster, trailer, lịch chiếu, và responsive design
+ */
 
-/* ===== MOVIE DETAIL PAGE - SIDEBAR LAYOUT ===== */
+/* ===== TRANG CHI TIẾT PHIM - LAYOUT SIDEBAR ===== */
 .movie-detail-layout {
     display: grid;
     grid-template-columns: 1.5fr 1fr;

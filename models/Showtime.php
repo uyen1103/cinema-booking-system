@@ -5,11 +5,13 @@ class Showtime {
     private PDO $conn;
     private string $table = 'showtimes';
 
+    // Khoi tao ket noi DB cho cac thao tac ve lich chieu.
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
     }
 
+    // Chuan hoa du lieu lich chieu va bo sung gia tri hien thi.
     private function normalizeRow(array $row): array {
         $row['showtime_id'] = (int) ($row['showtime_id'] ?? 0);
         $row['movie_id'] = (int) ($row['movie_id'] ?? 0);
@@ -26,6 +28,7 @@ class Showtime {
         return $row;
     }
 
+    // Lay danh sach lich chieu co loc theo tu khoa/ngay/trang thai.
     public function getAll(array $filters = []): array {
         $sql = "SELECT s.*,
                     m.title AS movie_title,
@@ -59,6 +62,7 @@ class Showtime {
         return array_map(fn(array $row) => $this->normalizeRow($row), $stmt->fetchAll());
     }
 
+    // Lay thong tin lich chieu theo id.
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE showtime_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
@@ -66,6 +70,7 @@ class Showtime {
         return $row ? $this->normalizeRow($row) : null;
     }
 
+    // Tao lich chieu moi.
     public function create(array $data): bool {
         $sql = "INSERT INTO {$this->table}
                 (movie_id, room_id, show_date, start_time, end_time, price, base_price, status)
@@ -84,6 +89,7 @@ class Showtime {
         ]);
     }
 
+    // Cap nhat lich chieu theo id.
     public function update(int $id, array $data): bool {
         $sql = "UPDATE {$this->table}
                 SET movie_id = :movie_id,
@@ -110,16 +116,19 @@ class Showtime {
         ]);
     }
 
+    // Dem so ve dang giu/da thanh toan cua lich chieu.
     public function countTickets(int $showtimeId): int {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM tickets WHERE showtime_id = :id AND ticket_status IN ('reserved', 'paid')");
         $stmt->execute([':id' => $showtimeId]);
         return (int) ($stmt->fetchColumn() ?: 0);
     }
 
+    // Chi cho xoa lich chieu neu chua co ve dang hoat dong.
     public function canDelete(int $showtimeId): bool {
         return $this->countTickets($showtimeId) === 0;
     }
 
+    // Xoa lich chieu khi thoa dieu kien an toan.
     public function delete(int $id): bool {
         if (!$this->canDelete($id)) {
             return false;
@@ -128,6 +137,7 @@ class Showtime {
         return $stmt->execute([':id' => $id]);
     }
 
+    // Kiem tra trung lich trong cung phong (co the bo qua 1 id).
     public function hasConflict(int $roomId, string $showDate, string $startTime, string $endTime, ?int $ignoreId = null): bool {
         $sql = "SELECT COUNT(*) FROM {$this->table}
                 WHERE room_id = :room_id
@@ -151,6 +161,7 @@ class Showtime {
         return (int) $stmt->fetchColumn() > 0;
     }
 
+    // Lay thong ke lich chieu (tong, hom nay, dang hoat dong, da huy).
     public function getStats(): array {
         $sql = "SELECT
                     COUNT(*) AS total_showtimes,

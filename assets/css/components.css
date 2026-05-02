@@ -1,5 +1,11 @@
-﻿/* components.css - extracted from style.css */
+﻿/*
+ * components.css - Các style cho các thành phần UI chung
+ * Bao gồm: form đăng nhập, card phim, modal trailer, và các thành phần khác
+ * Được trích xuất từ style.css gốc
+ */
+
 /* ===== FORMS ===== */
+/* Form đăng nhập */
 .auth-form {
     margin-bottom: 25px;
 }
@@ -515,7 +521,11 @@
     font-weight: 700;
     background: #fff1f2;
     border-radius: 999px;
+<<<<<<< HEAD
     padding: 10px 16px;
+=======
+    padding: 10px 5px;
+>>>>>>> 07185dd (Initial commit)
     font-size: 0.95rem;
 }
 

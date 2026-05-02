@@ -1,4 +1,8 @@
-<?php $isStaff = $userRole === 'staff'; ?>
+<?php
+// Xac dinh dang cap nhat nhan vien hay khach hang.
+$isStaff = $userRole === 'staff';
+?>
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2><?= $isStaff ? 'CHỈNH SỬA NHÂN VIÊN' : 'CHỈNH SỬA KHÁCH HÀNG' ?></h2>
@@ -10,6 +14,7 @@
     </a>
 </div>
 
+<!-- Form cap nhat ho so nguoi dung -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_update_user')) ?>" enctype="multipart/form-data" class="admin-form-grid">

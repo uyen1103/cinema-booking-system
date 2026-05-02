@@ -1,9 +1,12 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+// Model quản lý bảng giá ghế theo loại ghế để tính tổng tiền đặt vé
 class SeatPrice {
     private PDO $conn;
     private string $table = 'seat_prices';
+
+    // Khởi tạo và đảm bảo bảng giá ghế tồn tại
 
     public function __construct() {
         $database = new Database();
@@ -34,12 +37,14 @@ class SeatPrice {
         }
     }
 
+    // Lấy toàn bộ định nghĩa giá ghế theo loại
     public function getAll(): array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} ORDER BY seat_price_id");
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
+    // Lấy thông tin giá ghế theo loại ghế
     public function getByType($seatType): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE seat_type = :seat_type LIMIT 1");
         $stmt->execute([':seat_type' => $seatType]);

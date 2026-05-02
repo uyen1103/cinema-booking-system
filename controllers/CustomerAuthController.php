@@ -1,18 +1,25 @@
 <?php
-require_once __DIR__ . '/../models/Customer.php';
-require_once __DIR__ . '/../models/Promotion.php';
-require_once __DIR__ . '/../models/Employee.php';
+require_once __DIR__ . '/../models/Customer.php'; // Model quản lý khách hàng dùng cho đăng ký, đăng nhập và profile
+require_once __DIR__ . '/../models/Promotion.php'; // Model khuyến mãi dùng cho voucher và mã giảm giá
+require_once __DIR__ . '/../models/Employee.php'; // Model nhân viên dùng để kiểm tra đăng nhập chung qua cùng form
 
+// Controller xử lý đăng ký, đăng nhập, profile và các chức năng auth của khách hàng
+// - Đăng ký khách hàng mới
+// - Xác thực đăng nhập khách hàng và nhân viên
+// - Quản lý thông tin hồ sơ và voucher khuyến mãi
 class CustomerAuthController {
+    // Lấy giá trị POST an toàn và xóa khoảng trắng 2 đầu
     private function input(string $key, string $default = ''): string {
         return trim($_POST[$key] ?? $default);
     }
 
+    // Chuyển hướng người dùng tới URL khác
     private function redirect(string $url): void {
         header('Location: ' . $url);
         exit;
     }
 
+    // Khởi tạo session cho khách hàng sau khi đăng nhập thành công
     private function seedSession(array $customer): void {
         $_SESSION['customer_id'] = (int) $customer['customer_id'];
         $_SESSION['full_name'] = $customer['full_name'];
@@ -24,6 +31,7 @@ class CustomerAuthController {
         unset($_SESSION['employee_id'], $_SESSION['position'], $_SESSION['branch_name']);
     }
 
+    // Kiểm tra dữ liệu đăng ký cơ bản, trả về danh sách lỗi nếu có
     private function validateRegisterData(array $data): array {
         $errors = [];
         if (empty($data['full_name'])) $errors[] = 'Vui lòng nhập họ tên.';
@@ -38,6 +46,10 @@ class CustomerAuthController {
         return $errors;
     }
 
+    // Chức năng 4.3.1: Đăng ký tài khoản khách hàng mới
+    // - Hiển thị form đăng ký nếu truy cập bằng GET
+    // - Xử lý dữ liệu POST để tạo khách hàng mới trong hệ thống
+    // - Kiểm tra email trùng, validate mật khẩu và điều hướng khi thành công
     public function register(): void {
         if (isEmployeeLoggedIn()) {
             $this->redirect(admin_url('admin_dashboard'));
@@ -51,6 +63,7 @@ class CustomerAuthController {
             return;
         }
 
+        // Thu thập dữ liệu đăng ký từ form và chuẩn hóa input
         $payload = [
             'full_name' => $this->input('full_name'),
             'email' => $this->input('email'),
@@ -68,19 +81,26 @@ class CustomerAuthController {
         }
         $errors = array_merge($errors, $customerModel->validatePassword($payload['password']));
 
+        // Nếu có lỗi validate, hiện lại form với thông báo lỗi
         if (!empty($errors)) {
             include __DIR__ . '/../views/auth/register.php';
             return;
         }
 
+        // Gọi model tạo tài khoản mới và chuyển hướng khi thành công
         if ($customerModel->register($payload + ['status' => 'active'])) {
             $this->redirect(app_url('login', ['message' => 'Đăng ký thành công']));
         }
 
+        // Nếu lưu không thành công, báo lỗi chung và hiển thị lại form
         $errors[] = 'Đăng ký thất bại.';
         include __DIR__ . '/../views/auth/register.php';
     }
 
+    // Chức năng 4.3.2: Đăng nhập hệ thống
+    // - Kiểm tra thông tin email/số điện thoại và mật khẩu
+    // - Phân biệt đăng nhập khách hàng hoặc nhân viên
+    // - Điều hướng sang khu vực phù hợp sau khi xác thực thành công
     public function login(): void {
         if (isCustomerLoggedIn()) {
             $this->redirect(app_url('home'));
@@ -101,9 +121,11 @@ class CustomerAuthController {
         $loginHelpText = 'Hệ thống sẽ tự động điều hướng đến đúng khu vực theo loại tài khoản sau khi xác thực thành công.';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu đăng nhập từ form
             $loginIdentifier = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
 
+            // Thử xác thực nhân viên trước nếu thông tin trùng
             $employeeModel = new Employee();
             $employee = $employeeModel->authenticate($loginIdentifier, $password);
             if ($employee) {
@@ -120,6 +142,7 @@ class CustomerAuthController {
                 $this->redirect(admin_url('admin_dashboard'));
             }
 
+            // Nếu không phải nhân viên thì xác thực khách hàng
             $customerModel = new Customer();
             $customer = $customerModel->authenticate($loginIdentifier, $password);
             if ($customer) {
@@ -127,6 +150,7 @@ class CustomerAuthController {
                 $this->redirect(app_url('home'));
             }
 
+            // Nếu cả hai đều không đúng thì show lỗi
             $errors = ['Thông tin đăng nhập không chính xác, hoặc tài khoản đã bị khóa.'];
             include __DIR__ . '/../views/auth/login.php';
             return;
@@ -135,6 +159,9 @@ class CustomerAuthController {
         include __DIR__ . '/../views/auth/login.php';
     }
 
+    // Chức năng 4.3.3: Xem thông tin tài khoản cá nhân
+    // - Hiển thị trang thông tin khách hàng hiện tại
+    // - Lấy thông tin user hiện tại từ model theo session
     public function profile(): void {
         if (!isCustomerLoggedIn()) {
             $this->redirect(app_url('login'));
@@ -144,6 +171,9 @@ class CustomerAuthController {
         include __DIR__ . '/../views/auth/profile.php';
     }
 
+    // Chức năng 4.3.3: Cập nhật tài khoản cá nhân
+    // - Cho phép khách hàng sửa thông tin cá nhân như tên, email, điện thoại, địa chỉ
+    // - Kiểm tra dữ liệu nhập và lưu thay đổi qua model
     public function editProfile(): void {
         if (!isCustomerLoggedIn()) {
             $this->redirect(app_url('login'));
@@ -153,6 +183,7 @@ class CustomerAuthController {
         $user = $customerModel->getById(currentCustomerId());
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Lấy dữ liệu profile mới từ form
             $payload = [
                 'full_name' => trim($_POST['full_name'] ?? ($user['full_name'] ?? '')),
                 'email' => trim($_POST['email'] ?? ($user['email'] ?? '')),
@@ -175,6 +206,7 @@ class CustomerAuthController {
                 $errors[] = 'Email đã được đăng ký.';
             }
 
+            // Nếu dữ liệu hợp lệ, cập nhật profile trong model
             if (empty($errors) && $customerModel->updateProfile(currentCustomerId(), $payload)) {
                 $_SESSION['full_name'] = $payload['full_name'];
                 $_SESSION['email'] = $payload['email'];
@@ -244,6 +276,9 @@ class CustomerAuthController {
         include __DIR__ . '/../views/auth/forgot-password.php';
     }
 
+    // Chức năng 4.3.9: Nhận khuyến mãi / xem voucher khuyến mãi
+    // - Hiển thị danh sách khuyến mãi đang hoạt động cho khách hàng
+    // - Lấy dữ liệu khuyến mãi từ model promotion và render view voucher
     public function vouchers(): void {
         if (!isCustomerLoggedIn()) {
             $this->redirect(app_url('login'));

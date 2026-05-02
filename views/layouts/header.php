@@ -98,4 +98,4 @@ $currentAction = $_GET['action'] ?? '';
             </div>
         </div>
     </header>
-    <main class="main-content">
+    <main class="main-content"></main>

@@ -1,9 +1,12 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+// Model quản lý thanh toán, trạng thái và đồng bộ số tiền theo đơn hàng
 class Payment {
     private PDO $conn;
     private string $table = 'payments';
+
+    // Khởi tạo model thanh toán và đảm bảo schema tồn tại
 
     public function __construct() {
         $database = new Database();
@@ -11,6 +14,7 @@ class Payment {
         $this->ensureSchema();
     }
 
+    // Lấy cấu trúc cột của bảng payments
     private function fetchColumns(string $table): array {
         $columns = [];
         try {
@@ -23,6 +27,7 @@ class Payment {
         return $columns;
     }
 
+    // Thêm cột vào bảng payments nếu thiếu
     private function addColumnIfMissing(string $column, string $definition): void {
         $columns = $this->fetchColumns($this->table);
         if (!isset($columns[strtolower($column)])) {
@@ -52,6 +57,7 @@ class Payment {
         $this->addColumnIfMissing('updated_at', 'DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
     }
 
+    // Chuẩn hóa tên phương thức thanh toán
     public function normalizeMethod(string $method): string {
         $method = strtolower(trim($method));
         return match ($method) {
@@ -64,6 +70,7 @@ class Payment {
         };
     }
 
+    // Chuẩn hóa trạng thái thanh toán
     public function normalizeStatus(string $status): string {
         $status = strtolower(trim($status));
         return match ($status) {
@@ -74,12 +81,14 @@ class Payment {
         };
     }
 
+    // Lấy thông tin thanh toán theo order_id
     public function getByOrderId(int $orderId): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE order_id = :order_id LIMIT 1");
         $stmt->execute([':order_id' => $orderId]);
         return $stmt->fetch() ?: null;
     }
 
+    // Lưu hoặc cập nhật thông tin thanh toán cho đơn hàng
     public function upsertForOrder(int $orderId, string $paymentMethod, float $amountPaid, string $paymentStatus): bool {
         $existing = $this->getByOrderId($orderId);
         $payload = [

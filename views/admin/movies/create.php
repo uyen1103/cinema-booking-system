@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>THÊM PHIM MỚI</h2>
@@ -9,12 +10,14 @@
     </a>
 </div>
 
+<!-- Form them phim moi -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_store_movie')) ?>" enctype="multipart/form-data" class="admin-form-grid">
             <div class="admin-form-grid admin-form-grid--2">
                 <div class="admin-form-grid">
                     <div>
+                        <!-- Tai poster phim -->
                         <label class="admin-form-label">Poster phim</label>
                         <div class="admin-image-preview admin-image-preview--poster mb-3">
                             <img src="assets/images/default-poster.svg" alt="Poster mặc định">
@@ -22,6 +25,7 @@
                         <input class="admin-file" type="file" name="poster" accept=".jpg,.jpeg,.png,.webp,.svg">
                     </div>
                     <div>
+                        <!-- Tai banner phim -->
                         <label class="admin-form-label">Banner phim</label>
                         <div class="admin-image-preview admin-image-preview--banner mb-3">
                             <img src="assets/images/default-banner.svg" alt="Banner mặc định">
@@ -32,6 +36,7 @@
 
                 <div class="admin-form-grid">
                     <div>
+                        <!-- Thong tin co ban cua phim -->
                         <label class="admin-form-label">Tên phim</label>
                         <input class="admin-input" type="text" name="title" required>
                     </div>
@@ -48,6 +53,7 @@
                     </div>
 
                     <div>
+                        <!-- The loai co goi y tu danh sach -->
                         <label class="admin-form-label">Thể loại</label>
                         <input class="admin-input" type="text" name="genre" list="movie-genres" placeholder="Ví dụ: Hành động, Tình cảm">
                         <datalist id="movie-genres">
@@ -84,12 +90,14 @@
                     </div>
 
                     <div>
+                        <!-- Mo ta tom tat phim -->
                         <label class="admin-form-label">Nội dung tóm tắt</label>
                         <textarea class="admin-textarea" name="description"></textarea>
                     </div>
                 </div>
             </div>
 
+            <!-- Nhom nut thao tac -->
             <div class="d-flex justify-content-end gap-2">
                 <a class="admin-btn admin-btn--light" href="<?= h(admin_url('admin_movies')) ?>">Hủy bỏ</a>
                 <button class="admin-btn admin-btn--primary" type="submit">

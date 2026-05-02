@@ -1,4 +1,9 @@
-﻿/* Biến màu sắc chính */
+﻿/*
+ * profile.css - Các style cho trang hồ sơ người dùng
+ * Bao gồm: sidebar điều hướng, thông tin cá nhân, form cập nhật, và responsive design
+ */
+
+/* Biến màu sắc chính */
 :root {
     --cinema-red: #e71930;
     --bg-gray: #f8f9fa;

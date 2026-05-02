@@ -3,6 +3,7 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+// Nap cac controller can thiet cho router.
 require_once __DIR__ . '/../controllers/CustomerAuthController.php';
 require_once __DIR__ . '/../controllers/AdminAuthController.php';
 require_once __DIR__ . '/../controllers/OAuthController.php';
@@ -15,6 +16,7 @@ require_once __DIR__ . '/../controllers/PromotionController.php';
 require_once __DIR__ . '/../controllers/OrderController.php';
 require_once __DIR__ . '/../controllers/ReportController.php';
 
+// Khoi tao controller de xu ly request.
 $customerAuth = new CustomerAuthController();
 $adminAuth = new AdminAuthController();
 $oauth = new OAuthController();
@@ -27,11 +29,13 @@ $promotionController = new PromotionController();
 $orderController = new OrderController();
 $reportController = new ReportController();
 
+// Lay action tu query string, mac dinh la trang chu.
 $requestedAction = trim((string) ($_GET['action'] ?? 'home'));
 if ($requestedAction === '' || $requestedAction === '/' || $requestedAction === 'index.php') {
     $requestedAction = 'home';
 }
 
+// Alias ho tro cac ten route cu de tuong thich nguoc.
 $legacyAliases = [
     'dashboard' => 'admin_dashboard',
     'reports' => 'admin_reports',
@@ -83,11 +87,13 @@ $legacyAliases = [
 
 $action = $legacyAliases[$requestedAction] ?? $requestedAction;
 
+// Chuyen huong va ket thuc xu ly.
 function redirect_to(string $url): void {
     header('Location: ' . $url);
     exit;
 }
 
+// Bat buoc vao trang guest cho khach (khong dang nhap va khong la admin).
 function ensure_customer_guest(): void {
     if (isEmployeeLoggedIn()) {
         redirect_to(admin_url('admin_dashboard'));
@@ -97,6 +103,7 @@ function ensure_customer_guest(): void {
     }
 }
 
+// Dam bao dang nhap khach hang (hoac cho phep guest neu allowGuests=true).
 function ensure_customer_context(bool $allowGuests = true): void {
     if (isEmployeeLoggedIn()) {
         set_flash('warning', 'Tài khoản quản trị không thể truy cập chức năng khách hàng.');
@@ -108,6 +115,7 @@ function ensure_customer_context(bool $allowGuests = true): void {
     }
 }
 
+// Bat buoc vao trang guest cho nhan vien.
 function ensure_employee_guest(): void {
     if (isEmployeeLoggedIn()) {
         redirect_to(admin_url('admin_dashboard'));
@@ -117,6 +125,7 @@ function ensure_employee_guest(): void {
     }
 }
 
+// Dam bao nguoi dung la admin da dang nhap.
 function ensure_admin_context(): void {
     if (!isEmployeeLoggedIn()) {
         set_flash('warning', 'Vui lòng đăng nhập bằng tài khoản quản trị để tiếp tục.');
@@ -128,6 +137,7 @@ function ensure_admin_context(): void {
     }
 }
 
+// Gom cac wrapper route theo tung ngữ cảnh truy cập.
 function route_customer_public(callable $callback): void {
     ensure_customer_context(true);
     $callback();
@@ -153,6 +163,7 @@ function route_admin(callable $callback): void {
     $callback();
 }
 
+// Nhom route public cua khach hang (khong can dang nhap).
 $publicCustomerRoutes = [
     'home' => fn() => $movieController->home(),
     'movie' => fn() => $movieController->detail(),
@@ -164,6 +175,7 @@ $publicCustomerRoutes = [
     'promotions' => fn() => $movieController->promotions(),
 ];
 
+// Nhom route guest (dang ky/dang nhap) cho khach hang.
 $customerGuestRoutes = [
     'register' => fn() => $customerAuth->register(),
     'login' => fn() => $customerAuth->login(),
@@ -172,6 +184,7 @@ $customerGuestRoutes = [
     'google-callback' => fn() => $oauth->googleCallback(),
 ];
 
+// Nhom route can dang nhap khach hang.
 $customerAuthRoutes = [
     'history' => fn() => $bookingController->history(),
     'cancel-booking' => fn() => $bookingController->cancelRequest(),
@@ -183,10 +196,12 @@ $customerAuthRoutes = [
     'logout' => fn() => $customerAuth->logout(),
 ];
 
+// Nhom route guest cho nhan vien (dang nhap admin).
 $employeeGuestRoutes = [
     'admin_login' => fn() => $adminAuth->login(),
 ];
 
+// Nhom route quan tri (admin/staff).
 $adminRoutes = [
     'admin_logout' => fn() => $adminAuth->logout(),
     'admin_profile' => fn() => $adminAuth->profile(),
@@ -282,6 +297,7 @@ $adminRoutes = [
     'admin_approve_cancel' => fn() => $orderController->approveCancellation(),
 ];
 
+// Dieu huong theo action va ngữ cảnh.
 if (isset($publicCustomerRoutes[$action])) {
     route_customer_public($publicCustomerRoutes[$action]);
     return;
@@ -307,4 +323,5 @@ if (isset($adminRoutes[$action])) {
     return;
 }
 
+// Fallback ve trang chu khach hang.
 route_customer_public(fn() => $movieController->home());

@@ -14,6 +14,7 @@ class Report {
     private Promotion $promotionModel;
     private Showtime $showtimeModel;
 
+    // Khoi tao ket noi DB va cac model phuc vu bao cao.
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
@@ -24,6 +25,7 @@ class Report {
         $this->showtimeModel = new Showtime();
     }
 
+    // Tong hop thong ke tong quan cho dashboard.
     public function getOverview(): array {
         return [
             'orders' => $this->orderModel->getStats(),
@@ -34,6 +36,7 @@ class Report {
         ];
     }
 
+    // Lay thong ke khach hang, uu tien model neu co ho tro.
     private function getCustomerStats(): array {
         if (method_exists($this->customerModel, 'getStats')) {
             return $this->customerModel->getStats();
@@ -53,6 +56,7 @@ class Report {
         ];
     }
 
+    // Tao du lieu doanh thu theo thang cho bieu do.
     public function getRevenueBars(int $year): array {
         $rows = $this->orderModel->getMonthlyRevenue($year);
         $map = array_fill(1, 12, 0.0);
@@ -70,6 +74,7 @@ class Report {
         return $result;
     }
 
+    // Lay danh sach phim ban chay theo so ve va doanh thu.
     public function getTopMovies(int $limit = 5): array {
         $sql = "SELECT m.title, COUNT(t.ticket_id) AS ticket_count, SUM(t.price) AS revenue
                 FROM tickets t
@@ -82,6 +87,7 @@ class Report {
         return $this->conn->query($sql)->fetchAll();
     }
 
+    // Bao cao hieu qua khuyen mai theo luot dung va ngan sach.
     public function getPromotionPerformance(int $limit = 5): array {
         $sql = "SELECT COALESCE(title, CONCAT('Khuyến mãi ', promotion_id)) AS title,
                        COALESCE(code, promo_code, '') AS code,
@@ -93,6 +99,7 @@ class Report {
         return $this->conn->query($sql)->fetchAll();
     }
 
+    // Lay danh sach hoa don gan day (gioi han so luong neu can).
     public function getRecentInvoices(int $limit = 5): array {
         $orders = $this->orderModel->getAll();
         if ($limit > 0) {

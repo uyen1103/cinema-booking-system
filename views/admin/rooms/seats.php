@@ -1,9 +1,11 @@
 <?php
+// Gom ghe theo hang de ve so do.
 $groupedSeats = [];
 foreach ($seats as $seat) {
     $groupedSeats[($seat['row_name'] ?? $seat['seat_row'] ?? '') ?? $seat['seat_row'] ?? 'A'][] = $seat;
 }
 
+// Xac dinh class CSS cho tung loai ghe.
 function seat_class(array $seat): string {
     if ((int) ($seat['status'] ?? 1) === 0) {
         return 'admin-seat admin-seat--disabled';
@@ -17,6 +19,7 @@ function seat_class(array $seat): string {
 }
 ?>
 
+<!-- Tieu de trang va cac nut thao tac -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>SƠ ĐỒ GHẾ: <?= h(($room['name'] ?? $room['room_name'] ?? 'Chưa cập nhật')) ?></h2>
@@ -37,6 +40,7 @@ function seat_class(array $seat): string {
     </div>
 </div>
 
+<!-- Khu vuc so do ghe va chu thich -->
 <div class="row g-3 admin-section">
     <div class="col-lg-8">
         <div class="admin-card">

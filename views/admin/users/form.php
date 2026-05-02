@@ -1,7 +1,9 @@
+<!-- Tieu de trang -->
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h3 class="admin-page-title"><?= $pageTitle ?></h3>
 </div>
 
+<!-- Form tao/cap nhat nguoi dung (luong cu) -->
 <div class="admin-card admin-form-card"><div class="admin-card__body">
     <form action="<?= h(admin_url(isset($user) ? 'admin_update_user' : 'admin_store_user')) ?>" method="POST">
         

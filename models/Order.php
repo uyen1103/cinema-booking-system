@@ -1,16 +1,21 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/Promotion.php';
-require_once __DIR__ . '/Ticket.php';
-require_once __DIR__ . '/Payment.php';
+require_once __DIR__ . '/../config/database.php'; // Cấu hình cơ sở dữ liệu dùng cho model order
+require_once __DIR__ . '/Promotion.php'; // Model khuyến mãi để áp mã và tính giảm giá
+require_once __DIR__ . '/Ticket.php'; // Model vé để giữ, thanh toán và hủy vé
+require_once __DIR__ . '/Payment.php'; // Model thanh toán để đồng bộ trạng thái tiền
 
 class Order {
+    // Model quản lý đơn đặt vé và luồng thanh toán, hủy vé, duyệt đơn
+    // - Tạo đơn, tính toán tổng tiền và áp mã giảm giá
+    // - Đồng bộ trạng thái thanh toán với bảng payments
+    // - Xử lý lịch sử đơn hàng, hủy đơn và duyệt đơn admin
     private PDO $conn;
     private string $table = 'orders';
     private Promotion $promotionModel;
     private Ticket $ticketModel;
     private Payment $paymentModel;
 
+    // Khởi tạo kết nối DB và các model liên quan cho đơn hàng
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
@@ -20,6 +25,7 @@ class Order {
         $this->syncSchema();
     }
 
+    // Lấy cấu trúc cột của bảng để kiểm tra schema order
     private function fetchColumns(string $table): array {
         $columns = [];
         $rows = $this->conn->query("SHOW COLUMNS FROM {$table}")->fetchAll();
@@ -29,6 +35,7 @@ class Order {
         return $columns;
     }
 
+    // Thêm cột vào bảng orders nếu bảng còn thiếu
     private function addColumnIfMissing(string $table, string $column, string $definition): void {
         $existing = $this->fetchColumns($table);
         if (!isset($existing[strtolower($column)])) {
@@ -36,6 +43,7 @@ class Order {
         }
     }
 
+    // Đồng bộ schema bảng orders với cấu trúc dữ liệu mới
     private function syncSchema(): void {
         if (!(bool)$this->conn->query("SHOW TABLES LIKE 'orders'")->fetchColumn()) {
             $this->conn->exec("CREATE TABLE orders (
@@ -123,11 +131,17 @@ class Order {
         }
     }
 
+    // Đồng bộ bản ghi thanh toán cho đơn hàng sau khi tạo hoặc cập nhật
     private function syncPaymentRow(int $orderId, string $paymentMethod, string $paymentStatus, float $amount): void {
         $this->paymentModel->upsertForOrder($orderId, $paymentMethod, $amount, $paymentStatus);
     }
 
+    // Chức năng 4.3.10: Tạo đơn đặt vé
+    // - Tạo bản ghi đơn hàng mới trong bảng orders
+    // - Gán mã đơn hàng, tổng tiền, giảm giá và số tiền thanh toán cuối cùng
+    // - Đồng thời tạo bản ghi thanh toán mặc định cho đơn hàng
     public function create($customerId, $promotionId, $orderCode, $totalAmount, $discountAmount, $finalAmount): int|false {
+        // Kiểm tra xem khách hàng có legacy user_id không để đồng bộ dữ liệu với bảng users cũ
         $legacyUserId = $this->resolveLegacyCustomerUserId((int) $customerId);
         if ($legacyUserId !== null) {
             $sql = "INSERT INTO {$this->table}
@@ -155,10 +169,15 @@ class Order {
             return false;
         }
         $orderId = (int) $this->conn->lastInsertId();
+
+        // Đồng bộ bản ghi thanh toán mặc định cho đơn vừa tạo
         $this->syncPaymentRow($orderId, 'cash', 'pending', (float) $finalAmount);
         return $orderId;
     }
 
+    // Xóa đơn hàng nếu không có vé nào được giữ lại sau khi tạo đặt vé thất bại
+    // - Dùng để tránh lưu đơn không có vé và giữ sạch bảng orders/payments
+    // - Dùng khi tạo đơn mà không thể giữ vé thành công
     public function deleteIfNoTickets(int $orderId): void {
         try {
             $stmt = $this->conn->prepare("SELECT COUNT(*) FROM tickets WHERE order_id = :order_id");
@@ -265,6 +284,8 @@ class Order {
         return $this->normalizeOrders($stmt->fetchAll());
     }
 
+    // Chức năng 4.3.7: Xem lịch sử đặt vé (chi tiết đơn hàng)
+    // - Lấy thông tin đơn hàng theo order_id và các vé, thanh toán liên quan
     public function getById($id): ?array {
         $sql = "SELECT o.*,
                        COALESCE(c.customer_id, o.customer_id, o.user_id, 0) AS user_id,
@@ -293,6 +314,8 @@ class Order {
         return $order;
     }
 
+    // Chức năng 4.3.7: Xem lịch sử đặt vé
+    // - Lấy danh sách đơn đặt vé của khách hàng theo id
     public function getOrdersByCustomerId(int $customerId): array {
         $stmt = $this->conn->prepare("SELECT o.*,
                 COALESCE(c.customer_id, o.customer_id, o.user_id, 0) AS user_id,
@@ -313,6 +336,8 @@ class Order {
         return $this->normalizeOrders($stmt->fetchAll());
     }
 
+    // Lấy danh sách vé của một đơn hàng cùng thông tin suất chiếu, phim và vị trí ghế
+    // - Dùng để hiển thị chi tiết đơn đặt vé và xác nhận thanh toán
     public function getTicketsByOrderId(int $orderId): array {
         $rowCol = 'row_name';
         try {
@@ -334,6 +359,8 @@ class Order {
         return $stmt->fetchAll();
     }
 
+    // Chức năng 4.3.6: Thanh toán / cập nhật trạng thái đơn hàng
+    // - Cập nhật trạng thái order_status và payment_status sau khi khách thanh toán hoặc admin xử lý
     public function updateStatus($id, $data): bool {
         $existing = $this->getById((int) $id);
         if (!$existing) return false;
@@ -420,6 +447,8 @@ class Order {
         return (int) ($stmt->fetchColumn() ?: 0);
     }
 
+    // Chức năng 4.3.11: Duyệt hủy / duyệt đơn vé
+    // - Admin duyệt đơn vé đã thanh toán và chuyển trạng thái sang completed
     public function approveOrder(int $orderId, ?int $employeeId = null): bool {
         if (!$this->canApproveOrder($orderId)) return false;
         $order = $this->getById($orderId);
@@ -437,13 +466,18 @@ class Order {
         return $this->cancelOrder((int) $orderId, 'Hủy từ yêu cầu hủy vé');
     }
 
+    // Chức năng 4.3.8: Hủy đặt vé
+    // - Cập nhật đơn hàng và vé sang trạng thái hủy, xử lý hoàn tiền nếu cần
     public function cancelOrder(int $orderId, string $note = '', ?int $employeeId = null): bool {
         $order = $this->getById($orderId);
         if (!$order) return false;
+
+        // Xác định trạng thái thanh toán mới dựa trên trạng thái hiện tại
         $newPaymentStatus = in_array(($order['payment_status'] ?? ''), ['paid', 'success'], true) ? 'refunded' : 'failed';
         if (!$this->canCancelOrder($orderId)) {
             return false;
         }
+
         $stmt = $this->conn->prepare("UPDATE {$this->table}
             SET order_status = 'cancelled', payment_status = :payment_status,
                 notes = :notes, updated_by_employee_id = :updated_by_employee_id WHERE order_id = :order_id");
@@ -454,6 +488,7 @@ class Order {
             ':order_id' => $orderId,
         ]);
         if ($ok) {
+            // Cập nhật trạng thái vé trong ticket và đồng bộ bảng payments
             $this->ticketModel->markCancelled($orderId);
             $this->syncPaymentRow($orderId, (string) ($order['payment_method'] ?? 'cash'), $newPaymentStatus, (float) ($order['final_amount'] ?? 0));
             if (in_array(($order['payment_status'] ?? ''), ['paid', 'success'], true)) {
@@ -463,6 +498,9 @@ class Order {
         return $ok;
     }
 
+    // Cập nhật thông tin khuyến mãi trên đơn hàng
+    // - Thay đổi promotion_id, discount_amount và final_amount khi khách nhập mã giảm giá
+    // - Đồng bộ lại dòng thanh toán để giữ chắc giá trị cuối cùng
     public function updatePromotion($orderId, $promotionId, $discountAmount, $finalAmount): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET promotion_id = :promotion_id, discount_amount = :discount_amount, final_amount = :final_amount WHERE order_id = :order_id");
         $ok = $stmt->execute([

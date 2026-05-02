@@ -1,10 +1,13 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+// Model quản lý dữ liệu nhân viên, bảng employees và đồng bộ với users legacy khi cần
 class Employee {
     private PDO $conn;
     private string $table = 'employees';
     private string $legacyTable = 'users';
+
+    // Khởi tạo kết nối DB và đảm bảo bảng nhân viên tồn tại
 
     public function __construct() {
         $database = new Database();
@@ -12,6 +15,7 @@ class Employee {
         $this->ensureSchema();
     }
 
+    // Chuẩn hóa dữ liệu nhân viên trước khi trả về
     private function normalizeRow(array $row): array {
         $row['employee_id'] = (int) ($row['employee_id'] ?? $row['user_id'] ?? 0);
         $row['user_id'] = (int) ($row['employee_id'] ?? 0);
@@ -30,12 +34,14 @@ class Employee {
         return $row;
     }
 
+    // Chuẩn hóa trạng thái nhân viên
     private function normalizeStatus(?string $status): string {
         return in_array($status, ['working', 'leave', 'inactive', 'blocked', 'resigned', 'active'], true)
             ? $status
             : 'working';
     }
 
+    // Kiểm tra bảng tồn tại trong DB
     private function tableExists(string $table): bool {
         try {
             $stmt = $this->conn->query("SHOW TABLES LIKE '{$table}'");
@@ -45,6 +51,7 @@ class Employee {
         }
     }
 
+    // Kiểm tra cột có tồn tại trong bảng
     private function hasColumn(string $table, string $column): bool {
         try {
             $stmt = $this->conn->prepare("SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = :table_name AND COLUMN_NAME = :column_name");
@@ -55,12 +62,14 @@ class Employee {
         }
     }
 
+    // Thêm cột nếu bảng nhân viên thiếu trường mới
     private function addColumnIfMissing(string $table, string $column, string $definition): void {
         if (!$this->hasColumn($table, $column)) {
             $this->conn->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
         }
     }
 
+    // Tạo bảng users legacy nếu cần cho đồng bộ dữ liệu cũ
     private function ensureLegacyTable(): void {
         if (!$this->tableExists($this->legacyTable)) {
             $this->conn->exec("CREATE TABLE {$this->legacyTable} (

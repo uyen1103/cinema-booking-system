@@ -1,9 +1,11 @@
 <?php
+// Gom cac tap du lieu tong quan cho dashboard.
 $orders = $overview['orders'] ?? [];
 $movies = $overview['movies'] ?? [];
 $customers = $overview['customers'] ?? [];
 $promotions = $overview['promotions'] ?? [];
 ?>
+<!-- Tieu de va nhanh hanh dong quan tri -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3 align-items-start">
     <div>
         <h2>BẢNG ĐIỀU KHIỂN</h2>
@@ -21,6 +23,7 @@ $promotions = $overview['promotions'] ?? [];
     </div>
 </div>
 
+<!-- Thong ke nhanh tren dau trang -->
 <div class="row g-3 admin-section">
     <div class="col-md-3"><div class="admin-stat-card"><div class="admin-stat-card__label">Doanh thu đã thu</div><div class="admin-stat-card__value"><?= number_format((float) ($orders['paid_revenue'] ?? 0) / 1000000, 1) ?>M</div><div class="admin-stat-card__meta"><?= h(format_currency($orders['paid_revenue'] ?? 0)) ?></div></div></div>
     <div class="col-md-3"><div class="admin-stat-card"><div class="admin-stat-card__label">Hóa đơn hoàn tất</div><div class="admin-stat-card__value"><?= (int) ($orders['completed_orders'] ?? 0) ?></div><div class="admin-stat-card__meta">Đơn đã ghi nhận doanh thu</div></div></div>
@@ -28,6 +31,7 @@ $promotions = $overview['promotions'] ?? [];
     <div class="col-md-3"><div class="admin-stat-card"><div class="admin-stat-card__label">Khuyến mãi hoạt động</div><div class="admin-stat-card__value"><?= (int) ($promotions['active_promotions'] ?? 0) ?></div><div class="admin-stat-card__meta">Đang chạy trong hệ thống</div></div></div>
 </div>
 
+<!-- Khu vuc bao cao: yeu cau huy ve + tong quan nhanh -->
 <div class="admin-report-grid admin-section">
     <div class="admin-card">
         <div class="admin-card__body">
@@ -82,6 +86,7 @@ $promotions = $overview['promotions'] ?? [];
     </div>
 </div>
 
+<!-- Danh sach hoa don gan day -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <div class="d-flex justify-content-between align-items-center mb-3">

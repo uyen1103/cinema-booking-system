@@ -18,6 +18,7 @@ class OrderController {
     private SeatPrice $seatPriceModel;
     private CancellationRequest $cancellationModel;
 
+    // Khoi tao cac model phuc vu quan ly hoa don.
     public function __construct() {
         $this->orderModel = new Order();
         $this->promotionModel = new Promotion();
@@ -29,6 +30,7 @@ class OrderController {
         $this->cancellationModel = new CancellationRequest();
     }
 
+    // Render view admin cua module hoa don.
     private function renderAdmin(string $viewPath, array $data = []): void {
         extract($data);
         ob_start();
@@ -37,11 +39,13 @@ class OrderController {
         include __DIR__ . '/../views/layouts/admin_layout.php';
     }
 
+    // Redirect den URL chi dinh.
     private function redirect(string $url): void {
         header("Location: {$url}");
         exit;
     }
 
+    // Danh sach hoa don va bo loc.
     public function index(): void {
         $filters = [
             'keyword' => trim($_GET['keyword'] ?? ''),
@@ -61,6 +65,7 @@ class OrderController {
         ]);
     }
 
+    // Hien thi form tao don ve thu cong.
     public function create(): void {
         $selectedShowtimeId = (int) ($_GET['showtime_id'] ?? 0);
         $selectedShowtime = $selectedShowtimeId ? $this->movieModel->getShowtimeById($selectedShowtimeId) : null;
@@ -79,6 +84,13 @@ class OrderController {
         ]);
     }
 
+    // Chức năng 4.3.10: Tạo đơn đặt vé từ admin
+    // - Xác thực request POST từ form tạo đơn vé admin
+    // - Thu thập khách hàng, suất chiếu, ghế đã chọn, phương thức và trạng thái thanh toán
+    // - Kiểm tra hợp lệ dữ liệu nhập, ghế chưa bị đặt, suất chiếu tồn tại
+    // - Tính tổng tiền theo loại ghế và áp dụng mã khuyến mãi nếu có
+    // - Tạo đơn trong bảng orders trước, sau đó giữ chỗ ghế bằng ticket
+    // - Nếu giữ chỗ ghế thất bại thì rollback đơn và thông báo lỗi
     public function store(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_orders'));
@@ -190,6 +202,7 @@ class OrderController {
         $this->redirect(admin_url('admin_order_detail', ['id' => $orderId]));
     }
 
+    // Chi tiet hoa don.
     public function detail(int $id): void {
         $order = $this->orderModel->getById($id);
         if (!$order) {
@@ -206,6 +219,7 @@ class OrderController {
         ]);
     }
 
+    // Cap nhat trang thai don va thanh toan.
     public function updateStatus(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_orders'));
@@ -230,6 +244,7 @@ class OrderController {
         $this->redirect(admin_url('admin_order_detail', ['id' => $id]));
     }
 
+    // Duyet ve da thanh toan.
     public function approve(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_orders'));
@@ -246,6 +261,7 @@ class OrderController {
     }
 
 
+    // Danh sach yeu cau huy ve.
     public function cancellations(): void {
         $status = trim($_GET['status'] ?? '');
         $requests = $status !== '' ? $this->cancellationModel->getAll($status) : $this->cancellationModel->getAll();
@@ -260,6 +276,11 @@ class OrderController {
         ]);
     }
 
+    // Chức năng 4.3.11: Duyệt hủy vé của admin
+    // - Xác thực request POST từ trang duyệt yêu cầu hủy
+    // - Lấy thông tin request hủy và kiểm tra trạng thái còn đang chờ xử lý
+    // - Cập nhật trạng thái yêu cầu thành approved/rejected và ghi admin xử lý
+    // - Nếu approved thì gọi hàm hủy đơn tương ứng, trả ghế và cập nhật doanh thu
     public function approveCancellation(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_cancellation_requests'));
@@ -297,6 +318,10 @@ class OrderController {
         $this->redirect(admin_url('admin_cancellation_requests'));
     }
 
+    // Hủy đơn vé do admin yêu cầu
+    // - Xác thực request POST từ trang chi tiết hóa đơn
+    // - Kiểm tra đơn có thể hủy được chưa, tránh hủy lại đơn đã hủy
+    // - Gọi model hủy đơn, trả lại trạng thái ghế/ticket và cập nhật doanh thu
     public function cancel(): void {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect(admin_url('admin_orders'));

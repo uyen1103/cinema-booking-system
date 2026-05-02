@@ -1,3 +1,4 @@
+<!-- Tieu de trang va nut thao tac don ve -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2>CHI TIẾT HÓA ĐƠN: <?= h($order['order_code'] ?? '') ?></h2>
@@ -30,10 +31,12 @@
     </div>
 </div>
 
+<!-- Chia cot: thong tin don ve va cap nhat trang thai -->
 <div class="row g-3 admin-section">
     <div class="col-lg-7">
         <div class="admin-card">
             <div class="admin-card__body">
+                <!-- Thong tin tong quan hoa don -->
                 <h4 class="fw-bold mb-3">Thông tin hóa đơn</h4>
                 <div class="admin-form-grid admin-form-grid--2">
                     <div class="admin-kpi-item">
@@ -59,6 +62,7 @@
 
 
                 <?php if (!empty($cancellationRequest)): ?>
+                    <!-- Hien thi yeu cau huy ve neu co -->
                     <div class="admin-kpi-item mt-4">
                         <div class="text-muted small">Yêu cầu hủy vé từ khách hàng</div>
                         <div class="fw-bold">Trạng thái: <?= h(ucfirst($cancellationRequest['status'])) ?></div>
@@ -67,6 +71,7 @@
                     </div>
                 <?php endif; ?>
 
+                <!-- Bang danh sach ve trong hoa don -->
                 <h5 class="fw-bold mt-4 mb-3">Danh sách vé</h5>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -99,6 +104,7 @@
     <div class="col-lg-5">
         <div class="admin-card">
             <div class="admin-card__body">
+                <!-- Form cap nhat trang thai don va thanh toan -->
                 <h4 class="fw-bold mb-3">Cập nhật trạng thái</h4>
                 <form method="POST" action="<?= h(admin_url('admin_update_order_status')) ?>" class="admin-form-grid">
                     <input type="hidden" name="order_id" value="<?= (int) $order['order_id'] ?>">

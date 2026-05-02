@@ -1,4 +1,5 @@
 <?php
+// Chuan bi du lieu tong quan cho bao cao.
 $overviewOrders = $overview['orders'];
 $overviewMovies = $overview['movies'];
 $overviewCustomers = $overview['customers'];
@@ -7,11 +8,13 @@ $maxRevenue = max(array_column($revenueBars, 'value')) ?: 1;
 $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMovies ?: [['ticket_count' => 1]])) ?: 1;
 ?>
 
+<!-- Tieu de trang bao cao -->
 <div class="admin-page-heading">
     <h2>TẠO BÁO CÁO THỐNG KÊ</h2>
     <p>Tổng hợp nhanh doanh thu, lượng vé bán, khách hàng và hiệu quả khuyến mãi trong năm <?= (int) ($_GET['year'] ?? date('Y')) ?>.</p>
 </div>
 
+<!-- Thong ke nhanh trong nam -->
 <div class="row g-3 admin-section">
     <div class="col-md-3">
         <div class="admin-stat-card">
@@ -47,6 +50,7 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
     </div>
 </div>
 
+<!-- Bao cao doanh thu theo thang va tong quan van hanh -->
 <div class="admin-report-grid admin-section">
     <div class="admin-card">
         <div class="admin-card__body">
@@ -98,6 +102,7 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
     </div>
 </div>
 
+<!-- Top phim va hieu qua khuyen mai -->
 <div class="admin-report-grid admin-section">
     <div class="admin-card">
         <div class="admin-card__body">
@@ -139,6 +144,7 @@ $maxMovieTickets = max(array_map(fn($row) => (int) $row['ticket_count'], $topMov
     </div>
 </div>
 
+<!-- Bang hoa don gan day -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <h4 class="fw-bold mb-3">Hóa đơn gần đây</h4>

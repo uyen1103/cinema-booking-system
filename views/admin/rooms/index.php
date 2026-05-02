@@ -1,4 +1,5 @@
 <?php
+// Ham hien thi nhan trang thai phong.
 function room_status_badge(int $status): string {
     return $status === 1
         ? '<span class="admin-badge admin-badge--success">Đang hoạt động</span>'
@@ -6,6 +7,7 @@ function room_status_badge(int $status): string {
 }
 ?>
 
+<!-- Tieu de trang va nut them phong -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between align-items-start gap-3">
     <div>
         <h2>QUẢN LÝ PHÒNG CHIẾU VÀ GHẾ</h2>
@@ -17,6 +19,7 @@ function room_status_badge(int $status): string {
     </a>
 </div>
 
+<!-- Thong ke nhanh ve phong va ghe -->
 <div class="row g-3 admin-section">
     <div class="col-md-3">
         <div class="admin-stat-card">
@@ -52,6 +55,7 @@ function room_status_badge(int $status): string {
     </div>
 </div>
 
+<!-- Bo loc va bang danh sach phong -->
 <div class="admin-card admin-section">
     <div class="admin-card__body">
         <form method="GET" class="admin-filter-bar mb-4">

@@ -5,15 +5,18 @@ class Room {
     private PDO $conn;
     private string $table = 'rooms';
 
+    // Khoi tao ket noi DB cho cac thao tac ve phong.
     public function __construct() {
         $database = new Database();
         $this->conn = $database->getConnection();
     }
 
+    // Bieu thuc lay ten hien thi uu tien name, fallback sang room_name.
     private function displayNameExpr(): string {
         return "COALESCE(NULLIF(name, ''), room_name)";
     }
 
+    // Chuan hoa du lieu phong va cac thong ke kem theo.
     private function normalizeRoom(array $room): array {
         $room['room_id'] = (int) ($room['room_id'] ?? 0);
         $room['name'] = trim((string)($room['name'] ?? '')) !== '' ? $room['name'] : ($room['room_name'] ?? '');
@@ -29,6 +32,7 @@ class Room {
         return $room;
     }
 
+    // Kiem tra trung ten phong (co the bo qua 1 id khi cap nhat).
     public function roomNameExists(string $name, ?int $ignoreId = null): bool {
         $sql = "SELECT room_id FROM {$this->table} WHERE {$this->displayNameExpr()} = :name";
         $params = [':name' => trim($name)];
@@ -42,6 +46,7 @@ class Room {
         return (bool) $stmt->fetch();
     }
 
+    // Lay danh sach phong kem loc theo tu khoa/trang thai va thong ke ghe/lich.
     public function getAll(array $filters = []): array {
         $sql = "SELECT r.*,
                     {$this->displayNameExpr()} AS display_name,
@@ -68,6 +73,7 @@ class Room {
         return array_map(fn(array $row) => $this->normalizeRoom($row), $stmt->fetchAll());
     }
 
+    // Lay thong tin phong theo id va co display_name.
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT *, {$this->displayNameExpr()} AS display_name FROM {$this->table} WHERE room_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
@@ -75,6 +81,7 @@ class Room {
         return $room ? $this->normalizeRoom($room) : null;
     }
 
+    // Lay danh sach ghe cua phong va chuan hoa cot cu (row/type).
     public function getSeatsByRoomId(int $roomId): array {
         $columns = [];
         try {
@@ -114,6 +121,7 @@ class Room {
         }, $rows);
     }
 
+    // Tao phong moi va tu dong tao ghe theo suc chua.
     public function create(array $data): int|false {
         $sql = "INSERT INTO {$this->table}
                 (name, room_name, capacity, opening_time, closing_time, status, maintenance_reason)
@@ -140,6 +148,7 @@ class Room {
         return $roomId;
     }
 
+    // Cap nhat thong tin phong, dong bo name va room_name.
     public function update(int $id, array $data): bool {
         $sql = "UPDATE {$this->table}
                 SET name = :name,
@@ -165,12 +174,14 @@ class Room {
         ]);
     }
 
+    // Dem so lich chieu cua phong.
     public function countShowtimes(int $roomId): int {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM showtimes WHERE room_id = :room_id");
         $stmt->execute([':room_id' => $roomId]);
         return (int) ($stmt->fetchColumn() ?: 0);
     }
 
+    // Kiem tra phong co ve dang giu/da thanh toan hay khong.
     public function hasActiveTickets(int $roomId): bool {
         $stmt = $this->conn->prepare("SELECT COUNT(*)
             FROM tickets t
@@ -180,10 +191,12 @@ class Room {
         return (int) ($stmt->fetchColumn() ?: 0) > 0;
     }
 
+    // Chi cho xoa khi khong co lich chieu va khong co ve dang hoat dong.
     public function canDelete(int $roomId): bool {
         return $this->countShowtimes($roomId) === 0 && !$this->hasActiveTickets($roomId);
     }
 
+    // Xoa phong neu an toan; khong thi tra ve false.
     public function delete(int $id): bool {
         if (!$this->canDelete($id)) {
             return false;
@@ -192,12 +205,14 @@ class Room {
         return $stmt->execute([':id' => $id]);
     }
 
+    // Dem tong ghe trong phong.
     public function getSeatCount(int $roomId): int {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM seats WHERE room_id = :room_id");
         $stmt->execute([':room_id' => $roomId]);
         return (int) ($stmt->fetchColumn() ?: 0);
     }
 
+    // Tao ghe chuan/vip theo suc chua neu chua co ghe.
     public function generateStandardSeats(int $roomId, ?int $capacity = null): bool {
         $room = $this->getById($roomId);
         if (!$room) {
@@ -262,12 +277,14 @@ class Room {
         return true;
     }
 
+    // Kiem tra ghe co ve dang giu/da thanh toan hay khong.
     public function seatHasBookedTickets(int $seatId): bool {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM tickets WHERE seat_id = :seat_id AND ticket_status IN ('reserved', 'paid')");
         $stmt->execute([':seat_id' => $seatId]);
         return (int) ($stmt->fetchColumn() ?: 0) > 0;
     }
 
+    // Bat/tat trang thai ghe khi khong co ve dang hoat dong.
     public function toggleSeatStatus(int $seatId): bool {
         if ($this->seatHasBookedTickets($seatId)) {
             return false;
@@ -276,6 +293,7 @@ class Room {
         return $stmt->execute([':seat_id' => $seatId]);
     }
 
+    // Tra ve thong ke phong va suc chua de hien thi dashboard.
     public function getStats(): array {
         $sql = "SELECT
                     COUNT(*) AS total_rooms,

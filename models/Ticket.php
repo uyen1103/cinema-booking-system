@@ -1,9 +1,13 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/database.php'; // Cấu hình cơ sở dữ liệu cho model vé
 
+// Model quản lý vé của đơn hàng
+// - Dùng để giữ chỗ ghế, truy vấn vé theo đơn, cập nhật trạng thái vé
 class Ticket {
     private PDO $conn;
     private string $table = 'tickets';
+
+    // Khởi tạo kết nối DB cho model vé
 
     public function __construct() {
         $database = new Database();
@@ -18,6 +22,8 @@ class Ticket {
         return $this->reserveTicketsWithPrice($orderId, $showtimeId, $seatPrices);
     }
 
+    // Đặt vé / giữ chỗ ghế cho đơn hàng
+    // - Chèn các vé vào bảng tickets với trạng thái 'reserved'
     public function reserveTicketsWithPrice($orderId, $showtimeId, $seatPrices): bool {
         try {
             $this->conn->beginTransaction();
@@ -42,6 +48,8 @@ class Ticket {
         }
     }
 
+    // Lấy danh sách vé theo đơn hàng
+    // - Dùng cho trang lịch sử, thông tin thanh toán và xác nhận vé
     public function getTicketsByOrder($orderId): array {
         $seatRowCol = 'row_name';
         $seatTypeCol = 'type';
@@ -77,11 +85,15 @@ class Ticket {
         return $stmt->fetchAll();
     }
 
+    // Cập nhật vé đã được thanh toán
+    // - Khi đơn hàng thanh toán thành công, chuyển vé từ 'reserved' sang 'paid'
     public function markPaid($orderId): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET ticket_status = 'paid' WHERE order_id = :order_id AND ticket_status = 'reserved'");
         return $stmt->execute([':order_id' => $orderId]);
     }
 
+    // Cập nhật vé bị hủy
+    // - Khi đơn hàng hủy, tất cả vé liên quan sẽ chuyển sang trạng thái 'cancelled'
     public function markCancelled($orderId): bool {
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET ticket_status = 'cancelled' WHERE order_id = :order_id AND ticket_status IN ('reserved','paid')");
         return $stmt->execute([':order_id' => $orderId]);

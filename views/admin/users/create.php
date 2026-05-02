@@ -1,4 +1,8 @@
-<?php $isStaff = $userRole === 'staff'; ?>
+<?php
+// Xac dinh dang tao nhan vien hay khach hang.
+$isStaff = $userRole === 'staff';
+?>
+<!-- Tieu de trang va nut quay lai -->
 <div class="admin-page-heading d-flex flex-wrap justify-content-between gap-3">
     <div>
         <h2><?= $isStaff ? 'THÊM NHÂN VIÊN MỚI' : 'THÊM KHÁCH HÀNG MỚI' ?></h2>
@@ -10,6 +14,7 @@
     </a>
 </div>
 
+<!-- Form tao ho so nguoi dung -->
 <div class="admin-card">
     <div class="admin-card__body">
         <form method="POST" action="<?= h(admin_url('admin_store_user')) ?>" enctype="multipart/form-data" class="admin-form-grid">

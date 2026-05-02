@@ -1,6 +1,10 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/database.php'; // Cấu hình cơ sở dữ liệu cho model khuyến mãi
 
+// Model quản lý khuyến mãi, mã giảm giá và các điều kiện áp dụng cho đơn hàng
+// - Lấy danh sách khuyến mãi đang hoạt động
+// - Kiểm tra mã giảm giá, hạn dùng và điều kiện áp dụng
+// - Cập nhật số lượng sử dụng và thông tin admin
 class Promotion {
     private PDO $conn;
     private string $table = 'promotions';
@@ -13,6 +17,7 @@ class Promotion {
         $this->columns = $this->fetchColumns();
     }
 
+    // Chuẩn hóa dữ liệu khuyến mãi trước khi trả về
     private function normalizePromotion(array $row): array {
         $row['promotion_id'] = (int) ($row['promotion_id'] ?? 0);
         $row['code'] = (string) ($row['code'] ?? $row['promo_code'] ?? '');
@@ -33,6 +38,7 @@ class Promotion {
         return $row;
     }
 
+    // Lấy cấu trúc cột của bảng promotions để đồng bộ schema
     private function fetchColumns(): array {
         $columns = [];
         $rows = $this->conn->query("SHOW COLUMNS FROM {$this->table}")->fetchAll();
@@ -46,6 +52,7 @@ class Promotion {
         return isset($this->columns[strtolower($column)]);
     }
 
+    // Thêm cột mới nếu bảng promotions thiếu trường đó
     private function addColumnIfMissing(string $column, string $definition): void {
         $existing = $this->fetchColumns();
         if (!isset($existing[strtolower($column)])) {
@@ -53,6 +60,7 @@ class Promotion {
         }
     }
 
+    // Đồng bộ schema bảng promotions và cập nhật dữ liệu cũ nếu cần
     private function syncSchema(): void {
         $this->addColumnIfMissing('code', "VARCHAR(30) NULL");
         $this->addColumnIfMissing('promo_code', "VARCHAR(30) NULL");
@@ -80,6 +88,7 @@ class Promotion {
         }
     }
 
+    // Lấy danh sách khuyến mãi theo bộ lọc tìm kiếm và trạng thái
     public function getAll(array $filters = []): array {
         $sql = "SELECT * FROM {$this->table} WHERE 1=1";
         $params = [];
@@ -98,6 +107,7 @@ class Promotion {
         return array_map(fn(array $row) => $this->normalizePromotion($row), $stmt->fetchAll());
     }
 
+    // Lấy chi tiết khuyến mãi theo id
     public function getById(int $id): ?array {
         $stmt = $this->conn->prepare("SELECT * FROM {$this->table} WHERE promotion_id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
@@ -105,7 +115,15 @@ class Promotion {
         return $row ? $this->normalizePromotion($row) : null;
     }
 
+    // Chức năng 4.3.9: Lấy khuyến mãi theo mã
+    // - Kiểm tra mã còn hiệu lực, còn hạn sử dụng và đã bật trạng thái
     public function getByCode($promoCode): ?array {
+        // Chuẩn hóa mã nhập từ người dùng
+        $promoCode = strtoupper(trim($promoCode));
+        if ($promoCode === '') {
+            return null;
+        }
+
         $sql = "SELECT * FROM {$this->table}
                 WHERE COALESCE(code, promo_code) = :promo_code
                   AND start_date <= NOW()
@@ -114,7 +132,7 @@ class Promotion {
                   AND (usage_limit IS NULL OR used_count < usage_limit)
                 LIMIT 1";
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute([':promo_code' => strtoupper(trim($promoCode))]);
+        $stmt->execute([':promo_code' => $promoCode]);
         $promo = $stmt->fetch() ?: null;
         if (!$promo) {
             return null;
@@ -122,6 +140,8 @@ class Promotion {
         return $this->normalizePromotion($promo);
     }
 
+    // Chức năng 4.3.9: Lấy danh sách khuyến mãi đang hoạt động
+    // - Dùng để hiển thị cho khách hàng khi chọn vé và nhập mã giảm giá
     public function getActivePromotions(): array {
         $sql = "SELECT *, COALESCE(code, promo_code) AS promo_code
                 FROM {$this->table}
@@ -130,6 +150,8 @@ class Promotion {
         return array_map(fn(array $row) => $this->normalizePromotion($row), $this->conn->query($sql)->fetchAll());
     }
 
+    // Tạo khuyến mãi mới
+    // - Dùng cho admin quản lý khuyến mãi trong hệ thống
     public function create(array $data): bool {
         $sql = "INSERT INTO {$this->table}
                 (code, promo_code, title, discount_type, discount_value, min_order_amount, min_amount, max_discount, usage_limit, used_count, budget, start_date, end_date, description, image_path, status)
@@ -138,6 +160,8 @@ class Promotion {
         return $stmt->execute($this->mapData($data));
     }
 
+    // Cập nhật thông tin khuyến mãi
+    // - Dùng khi admin chỉnh sửa điều kiện, thời gian hoặc giá trị giảm giá
     public function update(int $id, array $data): bool {
         $sql = "UPDATE {$this->table}
                 SET code = :code,
@@ -164,6 +188,8 @@ class Promotion {
     }
 
 
+    // Kiểm tra có thể xóa khuyến mãi không
+    // - Không xóa nếu có đơn hàng đang tham chiếu đến khuyến mãi này
     public function canDelete(int $id): bool {
         $stmt = $this->conn->prepare("SELECT COUNT(*) FROM orders WHERE promotion_id = :id");
         $stmt->execute([':id' => $id]);
@@ -191,12 +217,16 @@ class Promotion {
         return (bool) $stmt->fetch();
     }
 
+    // Chức năng 4.3.9: Quản lý lượt dùng khuyến mãi
+    // - Tăng used_count khi mã khuyến mãi được áp dụng cho đơn hàng đã thanh toán
     public function incrementUsedCount(?int $promotionId): void {
         if (!$promotionId) return;
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET used_count = COALESCE(used_count,0) + 1 WHERE promotion_id = :id");
         $stmt->execute([':id' => $promotionId]);
     }
 
+    // Chức năng 4.3.8: Hoàn nguyên lượt dùng khuyến mãi
+    // - Giảm used_count khi đơn hàng bị hủy để mã có thể dùng lại nếu phù hợp
     public function decrementUsedCount(?int $promotionId): void {
         if (!$promotionId) return;
         $stmt = $this->conn->prepare("UPDATE {$this->table} SET used_count = CASE WHEN COALESCE(used_count,0) > 0 THEN used_count - 1 ELSE 0 END WHERE promotion_id = :id");

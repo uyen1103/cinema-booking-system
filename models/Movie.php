@@ -1,10 +1,13 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+// Model quản lý phim, suất chiếu và ghế ngồi cho chức năng xem phim, chọn suất và đặt vé
 class Movie {
     private PDO $conn;
     private string $table = 'movies';
     private array $columns = [];
+
+    // Khởi tạo model phim, đảm bảo schema và đọc cấu trúc cột
 
     public function __construct() {
         $database = new Database();
@@ -13,6 +16,7 @@ class Movie {
         $this->columns = $this->fetchColumns($this->table);
     }
 
+    // Lấy danh sách cột của bảng để kiểm tra schema
     private function fetchColumns(string $table): array {
         $columns = [];
         $rows = $this->conn->query("SHOW COLUMNS FROM {$table}")->fetchAll();
@@ -22,10 +26,12 @@ class Movie {
         return $columns;
     }
 
+    // Kiểm tra xem cột có trong bảng đã load hay chưa
     private function hasColumn(string $column): bool {
         return isset($this->columns[strtolower($column)]);
     }
 
+    // Thêm cột vào bảng nếu cần thiết
     private function addColumnIfMissing(string $table, string $column, string $definition): void {
         $existing = $this->fetchColumns($table);
         if (!isset($existing[strtolower($column)])) {
@@ -34,6 +40,7 @@ class Movie {
         }
     }
 
+    // Đồng bộ schema phim và cập nhật cấu trúc bảng movies/showtimes
     private function syncSchema(): void {
         $this->addColumnIfMissing($this->table, 'description', 'TEXT NULL');
         $this->addColumnIfMissing($this->table, 'director', 'VARCHAR(150) NULL');
@@ -71,6 +78,7 @@ class Movie {
         }
     }
 
+    // Tạo điều kiện lọc phim theo trạng thái public
     private function publicStatusCondition(string $kind): string {
         return match ($kind) {
             'showing' => "(status IN (1, '1', 'showing') OR (status = 'coming_soon' AND release_date <= CURDATE()))",

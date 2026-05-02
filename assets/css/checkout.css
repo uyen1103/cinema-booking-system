@@ -1,4 +1,7 @@
-/* checkout.css - checkout and success page styles */
+/*
+ * checkout.css - Các style cho trang thanh toán và trang thành công
+ * Bao gồm: form thanh toán, mã khuyến mãi, tóm tắt đơn hàng, và trang thành công
+ */
 
 .section-block h2 {
     margin: 0 0 12px;

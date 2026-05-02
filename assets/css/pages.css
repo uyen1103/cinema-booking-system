@@ -1,5 +1,9 @@
-﻿/* pages.css - shared page component styles */
+﻿/*
+ * pages.css - Các style chung cho các thành phần trang
+ * Bao gồm: button, social login, và các style dùng chung trên nhiều trang
+ */
 
+/* Button cơ bản */
 .btn {
     padding: 14px 28px;
     border: none;
